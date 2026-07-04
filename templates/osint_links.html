@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OSINT Links | OSINT Menace</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="console">
+        <div class="brand-row">
+          <div>
+            <p class="eyebrow">OSINT Menace</p>
+            <h1>OSINT Links</h1>
+            <p class="tagline">Built for Hunters, Not Browsers.</p>
+            <p class="product-line">A Defensive Thinking Project.</p>
+          </div>
+          <nav class="top-nav" aria-label="Primary">
+            <a href="{{ url_for('index') }}">Console</a>
+            <a href="{{ url_for('cases_page') }}">Cases</a>
+            <a href="{{ url_for('osint_links_page') }}" aria-current="page">OSINT Links</a>
+            <a href="{{ url_for('help_page') }}">Help</a>
+          </nav>
+        </div>
+        <div class="result-tools">
+          <label>
+            Filter links
+            <input id="link-filter" type="text" placeholder="Filter categories, tools, or URLs">
+          </label>
+          <div class="status-pill">{{ catalog.categories | length }} Categories</div>
+        </div>
+      </section>
+
+      {% for category in catalog.categories %}
+        <section class="results link-category" data-link-category>
+          <div class="section-heading">
+            <p class="eyebrow">Catalog</p>
+            <h2>{{ category.name }}</h2>
+          </div>
+          <div class="links-list compact-links">
+            {% for link in category.links %}
+              <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">
+                <span>{{ link.title }}</span>
+                <small>{{ link.url }}</small>
+              </a>
+            {% endfor %}
+          </div>
+        </section>
+      {% endfor %}
+
+      <section class="provenance-note source-credit">
+        <p>
+          Source credit: links and categories are derived from
+          <a href="{{ catalog.source_url }}" target="_blank" rel="noopener noreferrer">{{ catalog.source_title }}</a>.
+          OSINT Menace curates the catalog for defensive, lawful research and excludes obviously unsafe identity-generation,
+          onion mirror, and scraped-data entries from the default page.
+        </p>
+      </section>
+    </main>
+
+    <script>
+      const linkFilter = document.querySelector("#link-filter");
+      if (linkFilter) {
+        linkFilter.addEventListener("input", () => {
+          const needle = linkFilter.value.trim().toLowerCase();
+          document.querySelectorAll("[data-link-category]").forEach((section) => {
+            section.hidden = needle && !section.textContent.toLowerCase().includes(needle);
+          });
+        });
+      }
+    </script>
+    <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="alexberta" data-color="#FFDD00" data-emoji="🍕" data-font="Cookie" data-text="Buy me a Pizza" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff"></script>
+  </body>
+</html>

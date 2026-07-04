@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ case.name }} | OSINT Menace</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="console">
+        <div class="brand-row">
+          <div>
+            <p class="eyebrow">Case Workspace</p>
+            <h1>{{ case.name }}</h1>
+            <p class="product-line">Created {{ case.created_at }} · Updated {{ case.updated_at }}</p>
+          </div>
+          <div class="header-actions">
+            <nav class="top-nav" aria-label="Primary">
+              <a href="{{ url_for('index') }}">Console</a>
+              <a href="{{ url_for('cases_page') }}">Cases</a>
+              <a href="{{ url_for('osint_links_page') }}">OSINT Links</a>
+              <a href="{{ url_for('help_page') }}">Help</a>
+            </nav>
+            <div class="top-nav">
+              <a href="{{ url_for('export_case_json', case_id=case.id) }}">JSON</a>
+              <a href="{{ url_for('export_case_markdown', case_id=case.id) }}">Markdown</a>
+              <a href="{{ url_for('export_case_html', case_id=case.id) }}">HTML Report</a>
+            </div>
+          </div>
+        </div>
+        {% if case.notes %}
+          <div class="provenance-note"><p>{{ case.notes }}</p></div>
+        {% endif %}
+      </section>
+
+      <section class="summary-strip">
+        <div>
+          <strong>{{ case.summary.searches }}</strong>
+          <span>Searches</span>
+        </div>
+        <div>
+          <strong>{{ case.summary.findings }}</strong>
+          <span>Findings</span>
+        </div>
+        <div>
+          <strong>{{ case.summary.links }}</strong>
+          <span>Pivots</span>
+        </div>
+        <div>
+          <strong>{{ case.summary.notes }}</strong>
+          <span>Notes</span>
+        </div>
+      </section>
+
+      {% for search in case.searches|reverse %}
+        <section class="results">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">{{ search.search_type }}</p>
+              <h2>{{ search.query }}</h2>
+            </div>
+            <form class="case-item-delete" method="post" action="{{ url_for('delete_case_item', case_id=case.id, item_id=search.id) }}">
+              <button class="subtle-danger-button" type="submit">Delete Item</button>
+            </form>
+          </div>
+          <p class="product-line">{{ search.created_at }}</p>
+          {% for section in search.results %}
+            <article class="case-result">
+              <div class="section-heading">
+                <h3>{{ section.name }}</h3>
+                {% if section.module %}
+                  <span class="module-badge">{{ section.module.name }}</span>
+                {% endif %}
+              </div>
+              {% if section.findings %}
+                <div class="result-grid">
+                  {% for finding in section.findings %}
+                    <article class="result-card">
+                      <h3>{{ finding.label }}</h3>
+                      <pre>{{ finding.value | tojson(indent=2) if finding.value is mapping or finding.value is sequence and finding.value is not string else finding.value }}</pre>
+                    </article>
+                  {% endfor %}
+                </div>
+              {% endif %}
+              {% if section.links %}
+                <div class="links-list">
+                  {% for link in section.links %}
+                    <a href="{{ link.value }}" target="_blank" rel="noopener noreferrer">
+                      <span>{{ link.label }}</span>
+                      <small>{{ link.value }}</small>
+                    </a>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </article>
+          {% endfor %}
+        </section>
+      {% else %}
+        <section class="results"><div class="notes"><p>No searches saved to this case yet.</p></div></section>
+      {% endfor %}
+
+      <section class="results danger-zone">
+        <div class="section-heading">
+          <p class="eyebrow">Danger Zone</p>
+          <h2>Delete Case</h2>
+        </div>
+        <p class="product-line">This removes the saved case file and all searches stored in it.</p>
+        {% if delete_error %}
+          <div class="alert" role="alert">{{ delete_error }}</div>
+        {% endif %}
+        <form class="delete-form" method="post" action="{{ url_for('delete_case', case_id=case.id) }}">
+          <label>
+            Type case name to confirm
+            <input name="confirm_name" type="text" placeholder="{{ case.name }}" autocomplete="off">
+          </label>
+          <button class="danger-button" type="submit">Delete Case</button>
+        </form>
+      </section>
+    </main>
+    <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="alexberta" data-color="#FFDD00" data-emoji="🍕" data-font="Cookie" data-text="Buy me a Pizza" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff"></script>
+  </body>
+</html>

@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ case.name }} Report | OSINT Menace</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  </head>
+  <body class="report-body">
+    <main class="report-shell">
+      <header class="report-hero">
+        <div>
+          <p class="eyebrow">OSINT Menace</p>
+          <h1>{{ case.name }}</h1>
+          <p class="tagline">Built for Hunters, Not Browsers.</p>
+          <p class="product-line">A Defensive Thinking Project.</p>
+        </div>
+        <nav class="top-nav report-actions" aria-label="Report actions">
+          <a href="{{ url_for('case_detail', case_id=case.id) }}">Case</a>
+          <a href="{{ url_for('export_case_json', case_id=case.id) }}">JSON</a>
+          <a href="{{ url_for('export_case_markdown', case_id=case.id) }}">Markdown</a>
+          <a href="javascript:window.print()">Print</a>
+        </nav>
+      </header>
+
+      <section class="report-meta">
+        <div>
+          <span>Case ID</span>
+          <strong>{{ case.id }}</strong>
+        </div>
+        <div>
+          <span>Created</span>
+          <strong>{{ case.created_at }}</strong>
+        </div>
+        <div>
+          <span>Updated</span>
+          <strong>{{ case.updated_at }}</strong>
+        </div>
+      </section>
+
+      <section class="summary-strip report-summary">
+        <div>
+          <strong>{{ case.summary.searches }}</strong>
+          <span>Searches</span>
+        </div>
+        <div>
+          <strong>{{ case.summary.findings }}</strong>
+          <span>Findings</span>
+        </div>
+        <div>
+          <strong>{{ case.summary.links }}</strong>
+          <span>Pivots</span>
+        </div>
+        <div>
+          <strong>{{ case.summary.notes }}</strong>
+          <span>Notes</span>
+        </div>
+      </section>
+
+      {% if case.notes %}
+        <section class="report-section">
+          <div class="section-heading">
+            <p class="eyebrow">Case Notes</p>
+            <h2>Analyst Context</h2>
+          </div>
+          <p class="report-copy">{{ case.notes }}</p>
+        </section>
+      {% endif %}
+
+      <section class="report-section">
+        <div class="section-heading">
+          <p class="eyebrow">Findings</p>
+          <h2>Saved Recon Results</h2>
+        </div>
+
+        {% for search in case.searches %}
+          <article class="report-search">
+            <div class="report-search-head">
+              <div>
+                <p class="eyebrow">{{ search.search_type }}</p>
+                <h3>{{ search.query }}</h3>
+                <p class="product-line">{{ search.created_at }}</p>
+              </div>
+              <div class="report-counts">
+                <span>{{ search.summary.findings }} findings</span>
+                <span>{{ search.summary.links }} pivots</span>
+                <span>{{ search.summary.notes }} notes</span>
+              </div>
+            </div>
+
+            {% for section in search.results %}
+              <div class="report-result">
+                <div class="section-heading">
+                  <h4>{{ section.name }}</h4>
+                  {% if section.module %}
+                    <span class="module-badge">{{ section.module.name }}</span>
+                  {% endif %}
+                </div>
+
+                {% if section.findings %}
+                  <div class="report-table-wrap">
+                    <table class="report-table">
+                      <thead>
+                        <tr>
+                          <th>Finding</th>
+                          <th>Value</th>
+                          <th>Source</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for finding in section.findings %}
+                          <tr>
+                            <td>{{ finding.label }}</td>
+                            <td>
+                              <pre>{{ finding.value | tojson(indent=2) if finding.value is mapping or finding.value is sequence and finding.value is not string else finding.value }}</pre>
+                            </td>
+                            <td>{{ finding.source or "OSINT Menace" }}</td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                {% endif %}
+
+                {% if section.links %}
+                  <div class="report-links">
+                    {% for link in section.links %}
+                      <a href="{{ link.value }}" target="_blank" rel="noopener noreferrer">
+                        <span>{{ link.label }}</span>
+                        <small>{{ link.value }}</small>
+                      </a>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+
+                {% if section.notes %}
+                  <div class="notes">
+                    {% for note in section.notes %}
+                      <p>{{ note }}</p>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </article>
+        {% else %}
+          <p class="report-copy">No results have been saved to this case yet.</p>
+        {% endfor %}
+      </section>
+    </main>
+    <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="alexberta" data-color="#FFDD00" data-emoji="🍕" data-font="Cookie" data-text="Buy me a Pizza" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff"></script>
+  </body>
+</html>

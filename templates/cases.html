@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cases | OSINT Menace</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="console">
+        <div class="brand-row">
+          <div>
+            <p class="eyebrow">OSINT Menace</p>
+            <h1>Case Workspaces</h1>
+            <p class="tagline">Built for Hunters, Not Browsers.</p>
+            <p class="product-line">A Defensive Thinking Project.</p>
+          </div>
+          <nav class="top-nav" aria-label="Primary">
+            <a href="{{ url_for('index') }}">Console</a>
+            <a href="{{ url_for('cases_page') }}" aria-current="page">Cases</a>
+            <a href="{{ url_for('osint_links_page') }}">OSINT Links</a>
+            <a href="{{ url_for('help_page') }}">Help</a>
+          </nav>
+        </div>
+        <form class="case-create" method="post">
+          <label>
+            Case name
+            <input name="case_name" type="text" placeholder="Incident, person, organization, or campaign">
+          </label>
+          <label>
+            Notes
+            <textarea name="case_notes" placeholder="Scope, authorization, objectives, or analyst notes"></textarea>
+          </label>
+          <button type="submit">Create Case</button>
+        </form>
+      </section>
+
+      <section class="results">
+        <div class="section-heading">
+          <p class="eyebrow">Saved</p>
+          <h2>Investigations</h2>
+        </div>
+        {% if cases %}
+          <div class="case-list">
+            {% for case in cases %}
+              <a class="case-row" href="{{ url_for('case_detail', case_id=case.id) }}">
+                <span>{{ case.name }}</span>
+                <small>{{ case.search_count }} searches · updated {{ case.updated_at }}</small>
+              </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="notes"><p>No saved cases yet.</p></div>
+        {% endif %}
+      </section>
+    </main>
+    <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="alexberta" data-color="#FFDD00" data-emoji="🍕" data-font="Cookie" data-text="Buy me a Pizza" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff"></script>
+  </body>
+</html>

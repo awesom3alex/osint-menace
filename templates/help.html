@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Help | OSINT Menace</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="console help-hero" aria-label="OSINT Menace help">
+        <div class="brand-row">
+          <div>
+            <p class="eyebrow">OSINT Menace</p>
+            <h1>Help</h1>
+            <p class="tagline">Built for Hunters, Not Browsers.</p>
+            <p class="product-line">A Defensive Thinking Project.</p>
+          </div>
+          <nav class="top-nav" aria-label="Primary">
+            <a href="{{ url_for('index') }}">Console</a>
+            <a href="{{ url_for('cases_page') }}">Cases</a>
+            <a href="{{ url_for('osint_links_page') }}">OSINT Links</a>
+            <a href="{{ url_for('help_page') }}" aria-current="page">Help</a>
+          </nav>
+        </div>
+      </section>
+
+      <section class="results help-section">
+        <div class="section-heading">
+          <p class="eyebrow">Workflow</p>
+          <h2>Start With Auto</h2>
+        </div>
+        <div class="help-grid">
+          <article class="result-card">
+            <h3>Paste Targets</h3>
+            <p>Use Auto mode for mixed targets. Separate emails, handles, domains, IPs, names, phone numbers, and wallets with new lines, commas, or semicolons.</p>
+          </article>
+          <article class="result-card">
+            <h3>Review Pivots</h3>
+            <p>Menace checks are passive by default: generated profile links, public search links, DNS/RDAP data, public reputation pivots, and explorer links.</p>
+          </article>
+          <article class="result-card">
+            <h3>Stay Authorized</h3>
+            <p>Port scanning stays off unless you explicitly enable authorized port scan for systems you own or have permission to test.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="results help-section">
+        <div class="section-heading">
+          <p class="eyebrow">Safety</p>
+          <h2>Default Boundaries</h2>
+        </div>
+        <div class="help-grid">
+          <article class="result-card">
+            <h3>Included</h3>
+            <p>Passive profile URL patterns, DNS and RDAP pivots, public reputation links, wallet explorers, and analyst-driven case capture.</p>
+          </article>
+          <article class="result-card">
+            <h3>Excluded By Default</h3>
+            <p>Credential hunting, evasion logic, dark-web scraping, auth-walled automation, account enumeration against private apps, and API-key-only services.</p>
+          </article>
+          <article class="result-card">
+            <h3>Future Modules</h3>
+            <p>Higher-risk or paid-source checks can be added later as explicit opt-in modules with clear permission gates and source labels.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="results help-section">
+        <div class="section-heading">
+          <p class="eyebrow">Target Types</p>
+          <h2>What OSINT Menace Checks</h2>
+        </div>
+        <div class="help-grid">
+          {% for key, meta in search_types.items() %}
+            <article class="result-card">
+              <h3>{{ meta.label }}</h3>
+              <p>{{ meta.placeholder }}</p>
+            </article>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="results help-section">
+        <div class="section-heading">
+          <p class="eyebrow">API</p>
+          <h2>Future Site Hook</h2>
+        </div>
+        <div class="code-panel">
+          <pre>curl -sS http://localhost:8088/api/search \
+  -H 'Content-Type: application/json' \
+  -d '{"search_type":"auto","query":"person@example.com\nexampleuser\nexample.com"}'</pre>
+        </div>
+      </section>
+    </main>
+    <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="alexberta" data-color="#FFDD00" data-emoji="🍕" data-font="Cookie" data-text="Buy me a Pizza" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff"></script>
+  </body>
+</html>
