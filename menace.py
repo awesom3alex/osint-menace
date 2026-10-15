@@ -22,6 +22,7 @@ from version import RELEASE_NAME
 
 def export_case(case, kind, output):
     path = Path(output).expanduser()
+    path.parent.mkdir(parents=True, exist_ok=True)
     if kind == "docx":
         with path.open("xb") as handle:
             handle.write(build_word_report(case).getvalue())

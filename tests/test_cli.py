@@ -22,7 +22,7 @@ class CLITests(unittest.TestCase):
                 self.assertEqual(len(saved["searches"][0]["results"][0]["links"]), 1)
                 self.assertEqual(menace.main(prefix + ["dossier", case_id, "--field", "summary", "--value", "CLI summary"]), 0)
                 self.assertEqual(app.load_case(case_id)["dossier"]["summary"], "CLI summary")
-                output = str(Path(folder) / "report.docx")
+                output = str(Path(folder) / "reports" / "report.docx")
                 self.assertEqual(menace.main(prefix + ["export", case_id, "--output", output]), 0)
                 self.assertTrue(Path(output).read_bytes().startswith(b"PK"))
                 with contextlib.redirect_stderr(StringIO()):

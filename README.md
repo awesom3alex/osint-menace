@@ -318,9 +318,8 @@ wallet
 ├── data/
 │   ├── cases/              # Saved case JSON files
 │   └── catalog/            # OSINT Links catalog
-├── exports/                # Local report exports, excluded from Git
+├── exports/                # Created for local exports, excluded from Git
 ├── tests/                  # Automated CLI, collector, and report tests
-├── reference_scripts/      # Optional local reference notes/archives
 ├── static/
 │   └── styles.css          # Cyberpunk UI styling
 └── templates/              # Flask/Jinja HTML templates
@@ -363,7 +362,7 @@ The following GitHub projects were reviewed as reference material for workflow i
 | cloudgaze | https://github.com/Roentgenographic-skyline37/cloudgaze | Dashboard/product UI ideas, filtering concepts, and report/export interaction patterns. |
 | Tookie OSINT | https://github.com/Alfredredbird/tookie-osint | Username discovery, profile URL coverage, internationalized OSINT-tool presentation, and platform-list thinking. |
 
-The local `reference_scripts/` folder also contains duplicate E4GL30S1NT archive material. Treat the table above as the deduplicated source list.
+The table above is the deduplicated list of reference projects reviewed during development. Third-party archives are not included in this repository.
 
 ## Legal And Ethical Use
 
@@ -373,7 +372,7 @@ The app generates public pivots and performs passive checks by default. If you e
 
 ## License Notes
 
-Local development used archived reference projects under `reference_scripts/`, but the public GitHub package keeps that folder lightweight and ignores third-party zip archives by default. Those upstream projects have their own licenses and authors. Review each upstream license before redistributing, copying, or incorporating code from those projects.
+Local development used archived reference projects, but those archives are not included in this repository. Optional local `reference_scripts/` folders are ignored by Git. Those upstream projects have their own licenses and authors. Review each upstream license before redistributing, copying, or incorporating code from those projects.
 
 OSINT Menace itself should maintain clear separation between:
 

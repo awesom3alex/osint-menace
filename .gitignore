@@ -19,15 +19,12 @@ build/
 *.egg-info/
 
 # Local investigation data
-exports/*
-!exports/.gitkeep
+exports/
 data/cli_state.json
-data/cases/*.json
-!data/cases/.gitkeep
+data/cases/
 
 # Third-party research archives can be large and license-sensitive.
-reference_scripts/*.zip
-reference_scripts/.DS_Store
+reference_scripts/
 
 # Local editor/project files
 .idea/
