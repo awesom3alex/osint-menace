@@ -2,6 +2,8 @@
 
 **v0.1.0 – Beta: Works on My Machine Edition**
 
+![OSINT Menace v0.1.0 Beta — Works on My Machine Edition](docs/images/osint-menace-beta-announcement.png)
+
 See [CHANGELOG.md](CHANGELOG.md) for this release's changes and beta scope.
 
 **Open-Source Recon Console**
