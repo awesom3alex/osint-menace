@@ -1,0 +1,13 @@
+.dossier-editor h1 { font-size: 2rem; overflow-wrap: anywhere; }
+.dossier-editor h2, .dossier-section h2 { font-size: 1.4rem; }
+.dossier-editor nav { margin-top: 18px; justify-content: flex-start; }
+.dossier-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 20px; }
+.dossier-fields label { display: grid; gap: 8px; color: var(--muted); }
+.dossier-fields textarea { min-height: 120px; }
+.dossier-save { padding: 18px 0; }
+.dossier-section dl { margin-bottom: 0; }
+.dossier-section dl > div { padding: 14px 0; border-bottom: 1px solid var(--line); }
+.dossier-section dt { font-weight: 700; color: var(--cyan); }
+.dossier-section dd { margin: 8px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; }
+@media (max-width: 700px) { .dossier-fields { grid-template-columns: 1fr; } }
+@media print { .dossier-section dt { break-after: avoid; } .dossier-section dd { orphans: 3; widows: 3; } .report-table { min-width: 0; table-layout: fixed; } .report-table td { overflow-wrap: anywhere; } .report-table-wrap { overflow: visible; } }

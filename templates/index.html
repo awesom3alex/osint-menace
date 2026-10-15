@@ -15,6 +15,7 @@
             <h1>Open-Source Recon Console</h1>
             <p class="tagline">Built for Hunters, Not Browsers.</p>
             <p class="product-line">A Defensive Thinking Project.</p>
+            <p class="product-line">{{ release_name }}</p>
           </div>
           <div class="header-actions">
             <nav class="top-nav" aria-label="Primary">
@@ -22,6 +23,7 @@
               <a href="{{ url_for('cases_page') }}">Cases</a>
               <a href="{{ url_for('osint_links_page') }}">OSINT Links</a>
               <a href="{{ url_for('help_page') }}">Help</a>
+              <a href="{{ url_for('demo_page') }}">Demo</a>
             </nav>
             <div class="status-pill">Passive Mode</div>
           </div>

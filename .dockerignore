@@ -4,4 +4,11 @@ __pycache__/
 .pytest_cache/
 reference_scripts/
 data/cases/
+data/cli_state.json
+.env
+.env.*
 *.zip
+exports/
+.git/
+.venv/
+tests/

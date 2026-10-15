@@ -10,11 +10,18 @@ from typing import Any
 import uuid
 
 from flask import Flask, Response, abort, jsonify, redirect, render_template, request, url_for
+from flask import send_file
+from word_report import build_word_report
 
 import osint_tool
+from demo import DEMO_ID, demo_case
+from dossier import SECTIONS, dossier_values, markdown_dossier
+from version import RELEASE_NAME
 
 
 app = Flask(__name__)
+app.jinja_env.globals["release_name"] = RELEASE_NAME
+app.jinja_env.globals.update(dossier_sections=SECTIONS, dossier_values=dossier_values)
 DATA_DIR = Path("data")
 CASES_DIR = DATA_DIR / "cases"
 OSINT_LINKS_PATH = DATA_DIR / "catalog" / "osint_links.json"
@@ -172,6 +179,8 @@ def case_path(case_id: str) -> Path:
 
 
 def load_case(case_id: str) -> dict[str, Any]:
+    if case_id == DEMO_ID:
+        return demo_case()
     path = case_path(case_id)
     if not path.exists():
         abort(404)
@@ -186,6 +195,8 @@ def load_case(case_id: str) -> dict[str, Any]:
 
 
 def save_case(case_data: dict[str, Any]) -> None:
+    if case_data.get("id") == DEMO_ID:
+        abort(403, "The demo case is read-only.")
     CASES_DIR.mkdir(parents=True, exist_ok=True)
     case_path(case_data["id"]).write_text(json.dumps(case_data, indent=2, sort_keys=True))
 
@@ -263,10 +274,15 @@ def render_markdown_report(case_data: dict[str, Any]) -> str:
         f"- Searches: {len(case_data.get('searches', []))}",
         "",
     ]
+    lines.extend(markdown_dossier(case_data))
     notes = case_data.get("notes")
     if notes:
         lines.extend(["## Case Notes", "", notes, ""])
     for search in case_data.get("searches", []):
+        if search.get("review_status") or search.get("analyst_notes") or search.get("tags"):
+            lines.extend(["", "Review status: " + search.get("review_status", "unreviewed"),
+                          "Tags: " + ", ".join(search.get("tags", [])),
+                          "Analyst notes: " + search.get("analyst_notes", ""), ""])
         lines.extend(
             [
                 f"## Search: {search.get('query')}",
@@ -314,6 +330,11 @@ def help_page():
     return render_template("help.html", search_types=SEARCH_TYPES, modules=MODULE_REGISTRY)
 
 
+@app.get("/demo")
+def demo_page():
+    return render_template("case.html", case=demo_case())
+
+
 @app.get("/osint-links")
 def osint_links_page():
     catalog = load_osint_links()
@@ -331,6 +352,22 @@ def cases_page():
 @app.get("/cases/<case_id>")
 def case_detail(case_id: str):
     return render_template("case.html", case=load_case(case_id))
+
+
+@app.route("/cases/<case_id>/dossier", methods=["GET", "POST"])
+def edit_dossier(case_id: str):
+    case_data = load_case(case_id)
+    if request.method == "POST":
+        values = {key: request.form.get(key, "").strip()
+                  for _, fields in SECTIONS for key, _ in fields}
+        if any(len(value) > 20000 for value in values.values()):
+            abort(400, "Each dossier field must be at most 20,000 characters.")
+        case_data["dossier"] = values
+        case_data["updated_at"] = utc_now()
+        save_case(case_data)
+        return redirect(url_for("edit_dossier", case_id=case_id, saved="1"))
+    return render_template("dossier.html", case=case_data,
+                           values=dossier_values(case_data), saved=request.args.get("saved") == "1")
 
 
 @app.post("/cases/add-result")
@@ -460,6 +497,15 @@ def export_case_markdown(case_id: str):
 @app.get("/cases/<case_id>/report.html")
 def export_case_html(case_id: str):
     return render_template("report.html", case=load_case(case_id))
+
+
+@app.get("/cases/<case_id>/report.docx")
+def export_case_word(case_id: str):
+    case_data = load_case(case_id)
+    filename = re.sub(r"[^A-Za-z0-9_.-]+", "-", case_data.get("name", "case")).strip("-").lower() or "case"
+    return send_file(build_word_report(case_data), as_attachment=True,
+                     download_name=filename + "-report.docx",
+                     mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 
 
 @app.post("/api/search")

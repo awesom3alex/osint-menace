@@ -19,6 +19,9 @@ build/
 *.egg-info/
 
 # Local investigation data
+exports/*
+!exports/.gitkeep
+data/cli_state.json
 data/cases/*.json
 !data/cases/.gitkeep
 
@@ -31,4 +34,3 @@ reference_scripts/.DS_Store
 .vscode/
 *.swp
 *.swo
-

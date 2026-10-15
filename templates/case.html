@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ case.name }} | OSINT Menace</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dossier.css') }}">
   </head>
   <body>
     <main class="shell">
@@ -21,11 +22,14 @@
               <a href="{{ url_for('cases_page') }}">Cases</a>
               <a href="{{ url_for('osint_links_page') }}">OSINT Links</a>
               <a href="{{ url_for('help_page') }}">Help</a>
+              <a href="{{ url_for('demo_page') }}" {% if case.is_demo %}aria-current="page"{% endif %}>Demo</a>
             </nav>
             <div class="top-nav">
+              {% if not case.is_demo %}<a href="{{ url_for('edit_dossier', case_id=case.id) }}">Edit Dossier</a>{% endif %}
               <a href="{{ url_for('export_case_json', case_id=case.id) }}">JSON</a>
               <a href="{{ url_for('export_case_markdown', case_id=case.id) }}">Markdown</a>
               <a href="{{ url_for('export_case_html', case_id=case.id) }}">HTML Report</a>
+              <a href="{{ url_for('export_case_word', case_id=case.id) }}">Download Word</a>
             </div>
           </div>
         </div>
@@ -53,6 +57,7 @@
         </div>
       </section>
 
+      {% if case.is_demo %}{% include 'dossier_sections.html' %}{% endif %}
       {% for search in case.searches|reverse %}
         <section class="results">
           <div class="section-heading">
@@ -60,9 +65,9 @@
               <p class="eyebrow">{{ search.search_type }}</p>
               <h2>{{ search.query }}</h2>
             </div>
-            <form class="case-item-delete" method="post" action="{{ url_for('delete_case_item', case_id=case.id, item_id=search.id) }}">
+            {% if not case.is_demo %}<form class="case-item-delete" method="post" action="{{ url_for('delete_case_item', case_id=case.id, item_id=search.id) }}">
               <button class="subtle-danger-button" type="submit">Delete Item</button>
-            </form>
+            </form>{% endif %}
           </div>
           <p class="product-line">{{ search.created_at }}</p>
           {% for section in search.results %}
@@ -100,7 +105,7 @@
         <section class="results"><div class="notes"><p>No searches saved to this case yet.</p></div></section>
       {% endfor %}
 
-      <section class="results danger-zone">
+      {% if not case.is_demo %}<section class="results danger-zone">
         <div class="section-heading">
           <p class="eyebrow">Danger Zone</p>
           <h2>Delete Case</h2>
@@ -116,7 +121,7 @@
           </label>
           <button class="danger-button" type="submit">Delete Case</button>
         </form>
-      </section>
+      </section>{% endif %}
     </main>
     <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="alexberta" data-color="#FFDD00" data-emoji="🍕" data-font="Cookie" data-text="Buy me a Pizza" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff"></script>
   </body>

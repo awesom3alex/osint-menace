@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dossier | {{ case.name }} | OSINT Menace</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='dossier.css') }}">
+</head>
+<body>
+<main class="shell dossier-editor">
+  <header class="console">
+    <p class="eyebrow">OSINT Menace / Dossier</p>
+    <h1>{{ case.name }}</h1>
+    <nav class="top-nav" aria-label="Case navigation">
+      <a href="{{ url_for('case_detail', case_id=case.id) }}">Case</a>
+      <a href="{{ url_for('export_case_html', case_id=case.id) }}">View Report</a>
+      <a href="{{ url_for('export_case_word', case_id=case.id) }}">Download Word</a>
+      <a href="{{ url_for('export_case_markdown', case_id=case.id) }}">Markdown</a>
+    </nav>
+  </header>
+  {% if saved %}<p class="alert success" role="status">Dossier saved.</p>{% endif %}
+  <form method="post">
+    {% for title, fields in dossier_sections %}
+    <section class="results">
+      <h2>{{ title }}</h2>
+      <div class="dossier-fields">
+      {% for key, label in fields %}
+        <label for="{{ key }}">{{ label }}
+          <textarea id="{{ key }}" name="{{ key }}" maxlength="20000">{{ values[key] }}</textarea>
+        </label>
+      {% endfor %}
+      </div>
+    </section>
+    {% endfor %}
+    <div class="dossier-save"><button type="submit">Save Dossier</button></div>
+  </form>
+</main>
+</body>
+</html>

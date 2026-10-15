@@ -1,0 +1,30 @@
+{% set dossier = dossier_values(case) %}
+{% for title, fields in dossier_sections %}
+<section class="report-section dossier-section">
+  <h2>{{ title }}</h2>
+  <dl>
+  {% set filled = namespace(count=0) %}
+  {% for key, label in fields %}
+    {% if dossier[key] %}
+    {% set filled.count = filled.count + 1 %}
+    <div><dt>{{ label }}</dt><dd>{{ dossier[key] }}</dd></div>
+    {% endif %}
+  {% endfor %}
+  </dl>
+  {% if not filled.count %}<p>Not recorded.</p>{% endif %}
+</section>
+{% endfor %}
+<section class="report-section">
+  <h2>Saved Search and Capture Log</h2>
+  <div class="report-table-wrap">
+  <table class="report-table">
+    <thead><tr><th>Tool / module</th><th>Query</th><th>Saved at</th><th>Raw data reference</th></tr></thead>
+    <tbody>
+    {% for search in case.searches %}
+    <tr><td>OSINT Menace / {{ search.search_type }}</td><td>{{ search.query }}</td>
+      <td>{{ search.created_at }}</td><td>{{ search.id }}</td></tr>
+    {% else %}<tr><td colspan="4">No saved searches or captures.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
