@@ -1,3 +1,4 @@
+{% from 'readable_value.html' import readable %}
 <!doctype html>
 <html lang="en">
   <head>
@@ -9,21 +10,16 @@
   <body>
     <main class="shell">
       <section class="console" aria-label="OSINT Menace search">
-        <div class="brand-row">
+        <div class="brand-row console-header">
           <div>
             <p class="eyebrow">OSINT Menace</p>
             <h1>Open-Source Recon Console</h1>
             <p class="tagline">Built for Hunters, Not Browsers.</p>
             <p class="product-line">A Defensive Thinking Project.</p>
           </div>
+          <div class="status-pill">Passive Mode</div>
           <div class="header-actions">
-            <nav class="top-nav" aria-label="Primary">
-              <a href="{{ url_for('index') }}" aria-current="page">Console</a>
-              <a href="{{ url_for('cases_page') }}">Cases</a>
-              <a href="{{ url_for('osint_links_page') }}">OSINT Links</a>
-              <a href="{{ url_for('help_page') }}">Help</a>
-            </nav>
-            <div class="status-pill">Passive Mode</div>
+            {% include 'primary_nav.html' %}
           </div>
         </div>
 
@@ -186,7 +182,7 @@
               {% for finding in section.findings %}
                 <article class="result-card">
                   <h3>{{ finding.label }}</h3>
-                  <pre>{{ finding.value | tojson(indent=2) if finding.value is mapping or finding.value is sequence and finding.value is not string else finding.value }}</pre>
+                  {{ readable(finding.value) }}
                   {% if finding.source %}<p>{{ finding.source }}</p>{% endif %}
                 </article>
               {% endfor %}
@@ -276,51 +272,8 @@
         });
       }
 
-      const saveStatus = document.querySelector("#case-save-status");
-      document.querySelectorAll(".add-case-form, .link-case-form").forEach((form) => {
-        form.addEventListener("submit", async (event) => {
-          event.preventDefault();
-          const button = form.querySelector("button[type='submit']");
-          const originalText = button ? button.textContent : "";
-          if (button) {
-            button.disabled = true;
-            button.textContent = "Adding...";
-          }
-          try {
-            const response = await fetch(form.action, {
-              method: "POST",
-              body: new FormData(form),
-              headers: { "X-Requested-With": "fetch" },
-            });
-            if (!response.ok) {
-              throw new Error("Add failed");
-            }
-            const payload = await response.json();
-            if (saveStatus) {
-              saveStatus.textContent = payload.message || "Added to case.";
-              saveStatus.hidden = false;
-              saveStatus.scrollIntoView({ behavior: "smooth", block: "nearest" });
-            }
-            if (button) {
-              button.textContent = "Added";
-              setTimeout(() => {
-                button.disabled = false;
-                button.textContent = originalText;
-              }, 1800);
-            }
-          } catch (error) {
-            if (saveStatus) {
-              saveStatus.textContent = "Could not add this item to the case.";
-              saveStatus.hidden = false;
-            }
-            if (button) {
-              button.disabled = false;
-              button.textContent = originalText;
-            }
-          }
-        });
-      });
     </script>
+    <script src="{{ url_for('static', filename='case-save.js') }}" defer></script>
     <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="alexberta" data-color="#FFDD00" data-emoji="🍕" data-font="Cookie" data-text="Buy me a Pizza" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff"></script>
   </body>
 </html>

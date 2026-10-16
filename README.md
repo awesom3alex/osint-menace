@@ -12,7 +12,15 @@ The tool is designed for defensive research, digital footprint review, investiga
 
 ## Status
 
-This is an early local build intended to grow into a fuller site later. The current version is useful as a local analyst console and Docker-hosted prototype.
+**Current release: 0.2.0.** A local analyst workspace with isolated addons, durable search history, reviewable case findings, evidence provenance, and verified case backup/restore. See [CHANGELOG.md](CHANGELOG.md) for release details.
+
+## GitHub Addons
+
+Twelve selected tools are available in the **Addons** workspace at `/addons`, with isolated installations, background runs, raw output, and case capture. See [addons/README.md](addons/README.md) for pinned source restoration, build instructions, credentials, limits, and validation. The original Console keeps its existing passive searches; addon tools run only when selected.
+
+## Image features deferred
+
+Image analysis and image reuse are currently disabled and removed from navigation and History. Existing saved image files and previously attached case evidence are retained. No external image-search integration is active.
 
 ## Core Features
 
@@ -25,7 +33,10 @@ This is an early local build intended to grow into a fuller site later. The curr
 - Case workspaces stored as JSON files under `data/cases`.
 - Delete individual case items when a result does not fit.
 - Delete an entire case with exact-name confirmation.
-- Export cases as JSON, Markdown, and styled HTML reports.
+- Export cases as JSON, Markdown, styled HTML, and PDF reports.
+- Unified addon searches with cancellation, progress, durable History, and tool health.
+- Case timelines, review states, reversible duplicate merging, and evidence provenance.
+- Verified case ZIP backup/restore without overwriting existing cases.
 - Download raw search results as JSON from the results page.
 - Filter generated results in the browser.
 - OSINT Links page with curated public OSINT resources.

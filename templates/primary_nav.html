@@ -1,0 +1,15 @@
+<nav class="top-nav primary-nav" aria-label="Primary">
+  {% for label, href in [
+    ('Console', '/'),
+    ('Unified Search', '/unified'),
+    ('Addons', '/addons'),
+    ('History', '/history'),
+    ('Tool Health', '/tools'),
+    ('Cases', '/cases'),
+    ('OSINT Links', '/osint-links'),
+    ('Help', '/help')
+  ] %}
+  <a href="{{ href }}"{% if request.path == href or (href != '/' and request.path.startswith(href + '/')) %} aria-current="page"{% endif %}>{{ label }}</a>
+  {% endfor %}
+  <span class="release-version" aria-label="Application version">v{{ app_version }}</span>
+</nav>

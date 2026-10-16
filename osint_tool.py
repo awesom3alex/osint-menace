@@ -18,13 +18,11 @@ import json
 import re
 import socket
 import ssl
-import sys
 import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass, field
 from typing import Any, Iterable
-
 
 USER_AGENT = "DT-OSINT/1.0 (+https://example.local; passive public-source research)"
 TIMEOUT = 8

@@ -1,3 +1,4 @@
+{% from 'readable_value.html' import readable %}
 <!doctype html>
 <html lang="en">
   <head>
@@ -15,9 +16,10 @@
           <p class="tagline">Built for Hunters, Not Browsers.</p>
           <p class="product-line">A Defensive Thinking Project.</p>
         </div>
+        <div class="report-actions">{% include 'primary_nav.html' %}</div>
         <nav class="top-nav report-actions" aria-label="Report actions">
           <a href="{{ url_for('case_detail', case_id=case.id) }}">Case</a>
-          <a href="{{ url_for('export_case_json', case_id=case.id) }}">JSON</a>
+          <a href="{{ url_for('export_case_json', case_id=case.id) }}">JSON</a><a href="{{ url_for('pdf_report.export_pdf',case_id=case.id) }}">Download PDF</a>
           <a href="{{ url_for('export_case_markdown', case_id=case.id) }}">Markdown</a>
           <a href="javascript:window.print()">Print</a>
         </nav>
@@ -108,11 +110,16 @@
                         </tr>
                       </thead>
                       <tbody>
-                        {% for finding in section.findings %}
+                        {% for finding in section.findings if finding.include_in_report|default(true) %}
                           <tr>
                             <td>{{ finding.label }}</td>
                             <td>
-                              <pre>{{ finding.value | tojson(indent=2) if finding.value is mapping or finding.value is sequence and finding.value is not string else finding.value }}</pre>
+                              {{ readable(finding.value) }}
+                              <p><strong>{{ finding.verification_status|default('Unverified') }}</strong>{% if finding.reviewed_at %} · Reviewed {{ finding.reviewed_at }}{% endif %}</p>
+                              <p>Collected (UTC): {{ finding.collected_at|default(search.created_at) }}{% if finding.source_url %} · Source page: {{ finding.source_url }}{% endif %}</p>
+                              {% for source in finding.merged_sources|default([]) %}<p>Merged source: {{ source.source }} · {{ source.collected_at }} · {{ source.verification_status }}{% if source.source_url %} · {{ source.source_url }}{% endif %}{% if source.analyst_notes %}<br>{{ source.analyst_notes }}{% endif %}</p>{% endfor %}
+                              {% if finding.analyst_notes %}<p>Analyst notes: {{ finding.analyst_notes }}</p>{% endif %}
+                              {% for evidence in finding.evidence|default([]) %}<figure><img class="report-evidence" src="{{ url_for('case_features.evidence',case_id=case.id,evidence_id=evidence.id) }}" alt="{{ evidence.caption or 'Screenshot evidence' }}"><figcaption>{{ evidence.caption }} · {{ evidence.created_at }}</figcaption>{% include "evidence_metadata.html" %}</figure>{% endfor %}
                             </td>
                             <td>{{ finding.source or "OSINT Menace" }}</td>
                           </tr>

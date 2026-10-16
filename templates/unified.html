@@ -1,0 +1,8 @@
+{% extends 'workspace_base.html' %}{% block title %}Unified Search{% endblock %}
+{% block intro %}<p>Enter one target and select the tools to run. Each tool keeps its own results and status.</p>
+<form id="unified-form"><div class="advanced-grid"><label>Target type<select id="unified-kind"><option value="username">Username</option><option value="email">Email</option><option value="phone">Telephone</option></select></label><label>Target<input id="unified-target" type="text" required maxlength="254" placeholder="Enter one target"></label><label id="calling-code" hidden>Country calling code<input id="unified-country" type="text" placeholder="1 or 44" maxlength="3"></label></div>
+<p>Choose tools <button type="button" class="secondary-button" id="select-compatible">Select compatible tools</button></p>
+<div class="tool-choices">{% for tool in tools %}<label class="tool-choice" data-types="{{ tool.types|join(',') }}" data-ready="{{ 'yes' if tool.installed and tool.configured else 'no' }}"><input type="checkbox" name="tools" value="{{ tool.id }}"><span><strong>{{ tool.label }}</strong><small>{{ tool.upstream }} · {{ 'Ready' if tool.installed and tool.configured else ('Needs Instagram session' if tool.installed else 'Not installed') }}</small></span></label>{% endfor %}</div>
+<button type="submit" id="unified-run">Run selected tools</button><p id="unified-message" role="status" aria-live="polite"></p></form>
+<p class="case-capture-note">Two tools run at a time; the rest queue automatically. Each tool has a 180-second limit. All results are saved to History. Matches remain unverified until reviewed.</p>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static',filename='unified.js') }}"></script>{% endblock %}

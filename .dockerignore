@@ -5,3 +5,16 @@ __pycache__/
 reference_scripts/
 data/cases/
 *.zip
+.git
+**/.git
+.env
+
+data/workspace.sqlite3*
+data/evidence/
+*-preview.jpg
+output/
+tmp/
+
+data/image_analysis/
+
+data/pending_backups/

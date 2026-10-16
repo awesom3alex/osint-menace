@@ -1,0 +1,16 @@
+{% extends 'workspace_base.html' %}
+{% block title %}Restore Case Backup{% endblock %}
+{% block intro %}<p>Upload a Menace case backup to preview its contents and verify its files before restoring.</p><p><a href="{{ url_for('cases_page') }}">Back to cases</a></p>{% endblock %}
+{% block content %}<section class="results">
+{% if error %}<p class="alert" role="alert">{{ error }}</p>{% endif %}
+{% if preview %}
+<h2>Verified backup preview</h2><dl class="output-facts"><div><dt>Case</dt><dd>{{ preview.name }}</dd></div><div><dt>Saved searches</dt><dd>{{ counts.searches }}</dd></div><div><dt>Findings</dt><dd>{{ counts.findings }}</dd></div><div><dt>Evidence files</dt><dd>{{ counts.evidence }}</dd></div><div><dt>Timeline events</dt><dd>{{ preview.events|default([])|length }}</dd></div><div><dt>Expanded size</dt><dd>{{ '%.1f'|format(counts.bytes/1000000) }} MB</dd></div></dl>
+<p class="case-capture-note">All archive file hashes match the backup manifest. {% if counts.legacy %}{{ counts.legacy }} legacy attachments have no earlier recorded hash; their backup hashes verify transfer consistency only.{% else %}Stored evidence also matches the hashes recorded in the case.{% endif %} Hash checks do not establish the authenticity of the original source.</p>
+<details class="output-group"><summary>Backup details</summary><p class="evidence-provenance">Original case ID: {{ preview.id }}<br>Created: {{ preview.created_at }}<br>Updated: {{ preview.updated_at }}<br>Archive SHA-256: {{ sha }}</p><p>Includes case notes, reviews, report selections, timeline, duplicate groups, provenance, all referenced evidence, and a Markdown report snapshot. Reports can be regenerated after import.</p></details>
+<p>Restore creates a new case with a new ID. Existing cases and evidence are never overwritten. This preview expires after one hour.</p>
+<form method="post" action="{{ url_for('case_backups.restore') }}" class="backup-form"><input type="hidden" name="token" value="{{ token }}"><input type="hidden" name="sha256" value="{{ sha }}"><label>Restored case name<input type="text" name="case_name" maxlength="500" value="{{ preview.name[:480] }} (restored)" required></label><button type="submit">Restore as new case</button></form>
+{% else %}
+<h2>Preview a backup</h2><form method="post" action="{{ url_for('case_backups.preview') }}" enctype="multipart/form-data" class="backup-form"><label>Case backup ZIP<input type="file" name="backup" accept=".zip,application/zip" required></label><button type="submit">Verify and preview</button></form><p class="case-capture-note">Menace backup format version 1. Up to 256 MB compressed, 512 MB expanded, and 2,000 evidence files. A case backup contains saved case data and attachments; separate search History and server credentials are not included.</p>
+{% endif %}
+</section>{% endblock %}
+{% block scripts %}<script>document.querySelectorAll('.backup-form').forEach(form=>form.addEventListener('submit',()=>{const button=form.querySelector('button');button.disabled=true;button.textContent={{ ('Restoring…' if preview else 'Verifying…')|tojson }};}));</script>{% endblock %}

@@ -16,12 +16,7 @@
             <p class="tagline">Built for Hunters, Not Browsers.</p>
             <p class="product-line">A Defensive Thinking Project.</p>
           </div>
-          <nav class="top-nav" aria-label="Primary">
-            <a href="{{ url_for('index') }}">Console</a>
-            <a href="{{ url_for('cases_page') }}">Cases</a>
-            <a href="{{ url_for('osint_links_page') }}">OSINT Links</a>
-            <a href="{{ url_for('help_page') }}" aria-current="page">Help</a>
-          </nav>
+          {% include 'primary_nav.html' %}
         </div>
       </section>
 

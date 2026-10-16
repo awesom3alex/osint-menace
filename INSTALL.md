@@ -10,6 +10,7 @@ You need:
 - Docker Desktop or Docker Engine.
 - Docker Compose v2.
 - A terminal.
+- Python 3.12+ and Git to fetch the pinned addon sources before a clean build.
 - A browser.
 
 Optional for local Python development:
@@ -24,6 +25,7 @@ From the project folder:
 
 ```bash
 cd /path/to/osint-menace
+python3 addons/fetch.py
 docker compose up --build -d
 ```
 
@@ -56,14 +58,17 @@ docker compose version
 
 ### 2. Build And Start
 
+Restore pinned addon sources on a clean checkout, then build:
+
 ```bash
+python3 addons/fetch.py
 docker compose up --build -d
 ```
 
 This builds the Python image and starts the container named:
 
 ```text
-menace-osint
+osint-menace-addons
 ```
 
 The container listens internally on port `8080` and is exposed on the host at:
@@ -78,12 +83,12 @@ http://localhost:8088
 docker ps
 ```
 
-You should see `menace-osint` running.
+You should see `osint-menace-addons` running.
 
 ### 4. View Logs
 
 ```bash
-docker logs --tail 100 menace-osint
+docker logs --tail 100 osint-menace-addons
 ```
 
 ### 5. Stop The App
@@ -105,6 +110,17 @@ Source files are copied into the Docker image. After changing Python, templates,
 ```bash
 docker compose up --build -d
 ```
+
+## Version and Release Checks
+
+The running application reads its version from `VERSION`; Compose builds the `osint-menace:0.2.0` image. Verify the deployed version:
+
+```bash
+curl http://localhost:8088/api/version
+docker compose exec -T menace python -m unittest discover -s tests -v
+```
+
+First-party code checks use `ruff.toml`. Install the development requirements with `pip install -r requirements-dev.txt`, then run `ruff check .`. See [CHANGELOG.md](CHANGELOG.md) and [WORKSPACE_FEATURES.md](WORKSPACE_FEATURES.md) for the 0.2.0 feature set, persistence, and operating limits. The first addon build downloads dependencies and can take several minutes.
 
 ## Data Persistence
 
@@ -230,7 +246,7 @@ source .venv/bin/activate
 Install dependencies:
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt -r requirements-workspace.txt
 ```
 
 Run Flask locally:
@@ -298,13 +314,13 @@ docker ps
 Check logs:
 
 ```bash
-docker logs --tail 100 menace-osint
+docker logs --tail 100 osint-menace-addons
 ```
 
 Check health from inside the container:
 
 ```bash
-docker exec menace-osint python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=10).read().decode())"
+docker exec osint-menace-addons python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=10).read().decode())"
 ```
 
 ### Port 8088 Is Already In Use
@@ -382,13 +398,13 @@ docker compose down
 Logs:
 
 ```bash
-docker logs --tail 100 menace-osint
+docker logs --tail 100 osint-menace-addons
 ```
 
 Shell into container:
 
 ```bash
-docker exec -it menace-osint /bin/sh
+docker exec -it osint-menace-addons /bin/sh
 ```
 
 Health from host:
@@ -400,7 +416,7 @@ curl http://localhost:8088/health
 Health from container:
 
 ```bash
-docker exec menace-osint python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=10).read().decode())"
+docker exec osint-menace-addons python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=10).read().decode())"
 ```
 
 ## Security Notes
@@ -422,7 +438,7 @@ docker compose down
 Remove the image if desired:
 
 ```bash
-docker image rm osint-menace:latest
+docker image rm osint-menace:0.2.0
 ```
 
 Remove saved case data only if you are sure:

@@ -16,12 +16,7 @@
             <p class="tagline">Built for Hunters, Not Browsers.</p>
             <p class="product-line">A Defensive Thinking Project.</p>
           </div>
-          <nav class="top-nav" aria-label="Primary">
-            <a href="{{ url_for('index') }}">Console</a>
-            <a href="{{ url_for('cases_page') }}" aria-current="page">Cases</a>
-            <a href="{{ url_for('osint_links_page') }}">OSINT Links</a>
-            <a href="{{ url_for('help_page') }}">Help</a>
-          </nav>
+          {% include 'primary_nav.html' %}
         </div>
         <form class="case-create" method="post">
           <label>
@@ -36,6 +31,7 @@
         </form>
       </section>
 
+      <section class="results"><div class="section-heading"><h2>Case backups</h2><a href="{{ url_for('case_backups.page') }}">Restore a case backup</a></div><p>Download a complete ZIP from a case. Restore previews verify the files and create a separate case without overwriting existing work.</p></section>
       <section class="results">
         <div class="section-heading">
           <p class="eyebrow">Saved</p>

@@ -1,0 +1,34 @@
+{% macro tree(value, depth=0) %}
+  {% if depth > 12 %}<p>Further nested details are available in raw output.</p>
+  {% elif value is mapping %}
+    {% if not value %}<p>No details returned.</p>{% endif %}
+    <dl class="output-facts">
+      {% for key, item in value.items() if item is not mapping and (item is string or item is not sequence) %}
+        <div><dt>{{ key|field_label }}</dt><dd>{{ item|display_scalar }}</dd></div>
+      {% endfor %}
+    </dl>
+    {% for key, item in value.items() if item is mapping or (item is sequence and item is not string) %}
+      <details class="output-group" {% if item is mapping or item|length <= 5 %}open{% endif %}>
+        <summary>{{ key|field_label }}{% if item is not mapping %} ({{ item|length }}){% endif %}</summary>
+        {% if key == 'operators_in_country' %}<p class="case-capture-note">Country-wide operator directory. These are not confirmed carriers for this number.</p>{% endif %}
+        {{ tree(item, depth+1) }}
+      </details>
+    {% endfor %}
+  {% elif value is sequence and value is not string %}
+    {% if not value %}<p>No results returned.</p>{% endif %}
+    {% for item in value[:500] %}
+      {% if item is mapping or (item is sequence and item is not string) %}
+        <section class="output-record"><h4>Result {{ loop.index }}</h4>{{ tree(item,depth+1) }}</section>
+      {% else %}<p>{{ item|display_scalar }}</p>{% endif %}
+    {% endfor %}
+    {% if value|length > 500 %}<p>Showing 500 results. Full data is available in raw output.</p>{% endif %}
+  {% else %}<span>{{ value|display_scalar }}</span>{% endif %}
+{% endmacro %}
+
+{% macro readable(value) %}
+  {% set parsed = value|structured_value %}
+  {% if parsed.structured %}
+    <div class="structured-finding">{{ tree(parsed.value) }}</div>
+    <details class="output-group raw-finding"><summary>View raw JSON</summary><pre>{{ parsed.value|tojson(indent=2) }}</pre></details>
+  {% else %}<pre>{{ value }}</pre>{% endif %}
+{% endmacro %}

@@ -1,0 +1,8 @@
+(() => {
+ const form=document.getElementById('unified-form'), kind=document.getElementById('unified-kind'), message=document.getElementById('unified-message');
+ const choices=[...document.querySelectorAll('.tool-choice')];
+ function update(){choices.forEach(label=>{const compatible=label.dataset.types.split(',').includes(kind.value); label.hidden=!compatible;const input=label.querySelector('input');input.disabled=!compatible||label.dataset.ready!=='yes';if(input.disabled)input.checked=false;});document.getElementById('calling-code').hidden=kind.value!=='phone';document.getElementById('unified-target').placeholder=kind.value==='phone'?'+14155552671':kind.value==='email'?'person@example.com':'Username';}
+ kind.addEventListener('change',update);update();
+ document.getElementById('select-compatible').addEventListener('click',()=>{choices.forEach(label=>{const input=label.querySelector('input');input.checked=!input.disabled;});});
+ form.addEventListener('submit',async event=>{event.preventDefault();const button=document.getElementById('unified-run');button.disabled=true;message.textContent='Starting search…';try{const response=await fetch('/api/unified',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:kind.value,target:document.getElementById('unified-target').value,country:document.getElementById('unified-country').value,tools:[...form.querySelectorAll('input[name="tools"]:checked')].map(i=>i.value)})});const result=await response.json();if(!response.ok)throw Error(result.error);location.assign(result.url);}catch(error){message.textContent=error.message;button.disabled=false;}});
+})();

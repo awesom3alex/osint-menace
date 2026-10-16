@@ -32,3 +32,17 @@ reference_scripts/.DS_Store
 *.swp
 *.swo
 
+
+# Downloaded upstream sources; revisions are recorded in addons/manifest.json.
+addons/sources/
+
+data/workspace.sqlite3*
+data/evidence/
+output/
+tmp/
+
+data/image_analysis/
+
+data/pending_backups/
+# Local visual verification captures
+*-preview.jpg

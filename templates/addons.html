@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Addons · OSINT Menace</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+    [hidden] { display:none !important; }
+    .addon-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin:24px 0; }
+    .addon-card { border:1px solid #2c4652; border-radius:12px; padding:22px; background:#101c25; display:flex; flex-direction:column; gap:12px; }
+    .addon-card h2 { font-size:1.2rem; margin:0; } .addon-card p { margin:0; line-height:1.5; }
+    .addon-card .select-tool { margin-top:auto; } .addon-card.chosen { border-color:#5cf5d0; box-shadow:0 0 0 1px #5cf5d0; }
+    .addon-meta { display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:.78rem; color:#94aebd; }
+    .ready { color:#5cf5d0; } .setup { color:#ffd38b; }
+    .addon-controls { display:grid; grid-template-columns:1fr 2fr 1fr auto; gap:16px; align-items:end; }
+    .addon-controls label { display:grid; gap:8px; } #addon-output { white-space:pre-wrap; overflow-wrap:anywhere; max-height:540px; overflow:auto; background:#080f16; padding:20px; border-radius:8px; line-height:1.5; }
+    #job-status { color:#5cf5d0; } #save-result { display:flex; gap:12px; align-items:center; margin-top:18px; }
+    @media(max-width:1000px) { .addon-grid {grid-template-columns:repeat(2,minmax(0,1fr));} .addon-controls {grid-template-columns:1fr 1fr;} }
+    @media(max-width:600px) { .addon-grid,.addon-controls {grid-template-columns:1fr;} }
+  </style>
+</head>
+<body><main class="shell">
+  <section class="console">
+    <div class="brand-row"><div><p class="eyebrow">OSINT Menace / Addons</p><h1>Expand the investigation.</h1><p class="tagline">Twelve tools. One recon workspace.</p><p class="product-line">Choose a tool, run one target, capture useful output to a case.</p></div>
+    {% include 'primary_nav.html' %}</div>
+    <div class="summary-strip"><div><strong>{{ tools|selectattr('installed')|list|length }}/12</strong><span>Installed</span></div><div><strong>03</strong><span>Target types</span></div><div><strong>180s</strong><span>Search limit</span></div></div>
+    <div class="addon-grid">
+      {% for tool in tools %}
+      <article class="addon-card" data-tool="{{ tool.id }}">
+        <div class="addon-meta"><span>{{ tool.types|join(' + ')|upper }}</span><span class="{{ 'ready' if tool.installed and tool.configured else 'setup' }}">{{ 'Ready' if tool.installed and tool.configured else ('Needs session' if tool.installed else 'Not installed') }}</span></div>
+        <h2>{{ tool.label }}</h2><p>{{ tool.description }}</p>
+        <div class="addon-meta"><a href="{{ tool.repository.removesuffix('.git') }}" target="_blank" rel="noopener noreferrer">{{ tool.upstream }} ↗</a><span title="Source revision">{{ tool.revision[:8] }}</span></div>
+        <button class="select-tool" type="button" data-id="{{ tool.id }}" {% if not tool.installed or not tool.configured %}disabled{% endif %}>Select tool</button>
+      </article>
+      {% endfor %}
+    </div>
+    <form id="addon-form"><p class="eyebrow" id="selected-tool">Select a tool above</p>
+      <div class="addon-controls"><label>Target type<select id="target-kind"><option value="username">Username</option></select></label>
+      <label>Target<input id="addon-target" type="text" required maxlength="254" placeholder="Enter one target" autocomplete="off"></label>
+      <label id="country-field" hidden>Calling code<input id="country-code" type="text" placeholder="1 or 44" inputmode="numeric" maxlength="3"></label>
+      <button id="run-addon" type="submit" disabled>Run addon</button></div>
+      <p class="case-capture-note">Matches are leads to verify. Carrier and region describe numbering metadata, not a person's live location. External services may rate-limit or reject requests.</p>
+    </form>
+  </section>
+  <section class="results" id="output-panel" hidden><p class="eyebrow">Search output</p><h2 id="output-title">Addon results</h2><p id="job-status" role="status" aria-live="polite"></p><button type="button" id="cancel-addon" hidden>Cancel search</button><a id="addon-history" hidden>Open saved search</a><div id="readable-output"></div><details id="raw-output"><summary id="raw-output-label">View raw output</summary><pre id="addon-output"></pre></details>
+    <form id="save-result" method="post" action="{{ url_for('add_result_to_case') }}" hidden>
+      <input type="hidden" name="query" id="save-query"><input type="hidden" name="search_type" id="save-type"><input type="hidden" name="section_json" id="save-section">
+      {% if cases %}<select name="case_id" aria-label="Save to case">{% for case in cases %}<option value="{{ case.id }}">{{ case.name }}</option>{% endfor %}</select><button type="submit">Save output to case</button>{% else %}<a href="{{ url_for('cases_page') }}">Create a case to save output</a>{% endif %}
+    </form>
+  </section>
+</main>
+<script src="{{ url_for('static', filename='readable-output.js') }}"></script>
+<script>
+const tools = {{ tools|tojson }};
+let selected = null, running = false, activeJob = null;
+const byId = id => document.getElementById(id);
+document.querySelectorAll('.select-tool').forEach(button => button.addEventListener('click', () => {
+  selected = tools.find(t => t.id === button.dataset.id);
+  document.querySelectorAll('.addon-card').forEach(card => card.classList.toggle('chosen', card.dataset.tool === selected.id));
+  document.querySelectorAll('.select-tool').forEach(b => { b.textContent = b === button ? 'Selected' : 'Select tool'; });
+  byId('selected-tool').textContent = selected.label + ' · ' + selected.upstream;
+  byId('target-kind').replaceChildren(...selected.types.map(type => new Option(type[0].toUpperCase() + type.slice(1), type)));
+  byId('country-field').hidden = selected.id !== 'ignorant'; byId('run-addon').disabled = false;
+  byId('addon-target').placeholder = selected.types[0] === 'phone' ? '+14155552671' : 'Enter one ' + selected.types[0];
+  byId('addon-form').scrollIntoView({behavior:'smooth', block:'center'});
+}));
+byId('addon-form').addEventListener('submit', async event => {
+  event.preventDefault(); if (!selected || running) return;
+  running = true; document.querySelectorAll('.select-tool').forEach(b => b.disabled = true);
+  const tool = selected, target = byId('addon-target').value.trim(), kind = byId('target-kind').value;
+  byId('run-addon').disabled = true; byId('output-panel').hidden = false; byId('save-result').hidden = true;
+  byId('output-title').textContent = tool.label + ' · ' + target; byId('addon-output').textContent = ''; byId('readable-output').replaceChildren(); byId('raw-output').open = false;
+  byId('job-status').textContent = 'Starting…';
+  try {
+    const response = await fetch('/api/addons/run', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({tool:tool.id,target,kind,country:byId('country-code').value})});
+    const result = await response.json(); if (!response.ok) throw new Error(result.error || 'Search could not start.');
+    activeJob=result.id;byId('cancel-addon').hidden=false;byId('cancel-addon').disabled=false;byId('cancel-addon').textContent='Cancel search';byId('addon-history').href='/history/'+result.id;byId('addon-history').hidden=false;
+    let job;
+    do {
+      await new Promise(resolve => setTimeout(resolve, 1200));
+      const poll = await fetch('/api/addons/jobs/' + result.id); if (!poll.ok) throw new Error('Search expired or server restarted.');
+      job = await poll.json(); byId('job-status').textContent = job.display_state+' · '+job.elapsed_seconds+' seconds '+(job.status==='queued'?'waiting':'elapsed');
+    } while (['queued','running'].includes(job.status));
+    showReadableOutput(job.output);
+    byId('save-query').value = target; byId('save-type').value = 'addon:' + tool.id;
+    byId('save-section').value = JSON.stringify(job.section);
+    byId('save-result').hidden = false;
+  } catch (error) { byId('job-status').textContent = error.message; }
+  finally { byId('cancel-addon').hidden=true; activeJob=null; running = false; byId('run-addon').disabled = !selected; document.querySelectorAll('.select-tool').forEach(b => { const t = tools.find(t => t.id === b.dataset.id); b.disabled = !t.installed || !t.configured; }); }
+});
+byId('cancel-addon').addEventListener('click',async()=>{if(!activeJob)return;byId('cancel-addon').disabled=true;byId('cancel-addon').textContent='Cancelling…';try{const response=await fetch('/api/addons/jobs/'+activeJob+'/cancel',{method:'POST'});if(!response.ok)throw Error('Cancellation failed');}catch(error){byId('cancel-addon').disabled=false;byId('cancel-addon').textContent='Retry cancellation';byId('job-status').textContent=error.message;}});
+</script><script src="{{ url_for('static', filename='case-save.js') }}" defer></script></body></html>
