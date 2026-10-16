@@ -21,6 +21,11 @@ Optional for local Python development:
 
 ## Quick Start
 
+For terminal-only use, install the Python dependencies in a virtual environment
+and run `python menace.py`. No Docker service or web server is required.
+See [CLI.md](CLI.md) for installation commands, the menu workflow, batch input,
+case editing, and report exports.
+
 From the project folder:
 
 ```bash

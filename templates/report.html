@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ case.name }} Report | OSINT Menace</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dossier.css') }}">
   </head>
   <body class="report-body">
     <main class="report-shell">
@@ -19,7 +20,7 @@
         <div class="report-actions">{% include 'primary_nav.html' %}</div>
         <nav class="top-nav report-actions" aria-label="Report actions">
           <a href="{{ url_for('case_detail', case_id=case.id) }}">Case</a>
-          <a href="{{ url_for('export_case_json', case_id=case.id) }}">JSON</a><a href="{{ url_for('pdf_report.export_pdf',case_id=case.id) }}">Download PDF</a>
+          <a href="{{ url_for('export_case_json', case_id=case.id) }}">JSON</a><a href="{{ url_for('pdf_report.export_pdf',case_id=case.id) }}">Download PDF</a><a href="{{ url_for('export_case_word',case_id=case.id) }}">Download Word</a>
           <a href="{{ url_for('export_case_markdown', case_id=case.id) }}">Markdown</a>
           <a href="javascript:window.print()">Print</a>
         </nav>
@@ -69,6 +70,7 @@
         </section>
       {% endif %}
 
+      {% include 'dossier_sections.html' %}
       <section class="report-section">
         <div class="section-heading">
           <p class="eyebrow">Findings</p>

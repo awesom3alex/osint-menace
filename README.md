@@ -1,304 +1,173 @@
 # OSINT Menace
 
-**Open-Source Recon Console**
+**v0.2.0 — It Works on Phillip’s Computer Too**
 
-Built for Hunters, Not Browsers.
+![OSINT Menace v0.2.0 announcement](docs/images/osint-menace-beta-announcement.png)
 
-OSINT Menace is a Defensive Thinking Project.
+**Open-Source Recon Console · Built for Hunters, Not Browsers.**
+A Defensive Thinking Project by Alex Berta.
 
-OSINT Menace is a Dockerized Python web application for passive, case-driven OSINT triage. It gives analysts a simple cyberpunk-styled interface for running common open-source pivots, reviewing results, saving only the useful findings to cases, and exporting polished reports.
+OSINT Menace is a local investigation workspace with a Dockerized web interface and a terminal interface. Run public-source searches, review unverified leads, save useful findings to cases, attach evidence, and export reports.
 
-The tool is designed for defensive research, digital footprint review, investigation note-taking, and authorized security work. It favors passive lookups, generated source links, public records pivots, DNS/RDAP information, certificate transparency, wallet explorers, and analyst-controlled case management.
+[Quick start](#quick-start) · [Features](#features) · [Included addons](#included-addons) · [CLI guide](CLI.md) · [Changelog](CHANGELOG.md)
 
-## Status
+## Features
 
-**Current release: 0.2.0.** A local analyst workspace with isolated addons, durable search history, reviewable case findings, evidence provenance, and verified case backup/restore. See [CHANGELOG.md](CHANGELOG.md) for release details.
+- **Console:** searches for emails, usernames, phone numbers, names, domains, IP addresses, and crypto wallets, including mixed-input detection.
+- **Addons and Unified Search:** twelve isolated tools, compatible multi-tool searches, cancellation, execution states, elapsed time, and observed rate limits.
+- **Readable results:** structured JSON presented as facts, cards, and tables, with raw output available for inspection.
+- **History and tool health:** reopen saved web searches without rerunning them; inspect installation, local startup checks, and observed execution outcomes.
+- **Case workspaces:** analyst notes, per-finding verification states, report selection, activity timelines, and reversible duplicate consolidation that retains original findings and source assessments.
+- **Evidence provenance:** screenshot attachments, source URLs, attachment times, optional capture times, SHA-256 hashes, and file-integrity checks.
+- **Dossiers and reports:** guided dossier editing, editable Word reports, PDF reports, and JSON/Markdown/HTML exports. Report capabilities differ by interface; see the guides below.
+- **Backup and restore:** complete case ZIPs with referenced evidence and a file manifest; verified import previews restore into a separate case without overwriting existing work.
+- **Terminal workspace:** interactive searches, batch input, direct public-source collectors, case management, reviews/tags, dossier editing, and standalone report exports.
+- **Fictional demo:** explore a read-only sample case at `/demo` without running network searches.
 
-## GitHub Addons
+Image analysis and image searching are currently **disabled and deferred**.
 
-Twelve selected tools are available in the **Addons** workspace at `/addons`, with isolated installations, background runs, raw output, and case capture. See [addons/README.md](addons/README.md) for pinned source restoration, build instructions, credentials, limits, and validation. The original Console keeps its existing passive searches; addon tools run only when selected.
+## Quick start
 
-## Image features deferred
+### Docker web interface
 
-Image analysis and image reuse are currently disabled and removed from navigation and History. Existing saved image files and previously attached case evidence are retained. No external image-search integration is active.
+Requirements: Docker Desktop or Docker Engine with Compose v2, Git, and Python 3.12+ to fetch the pinned addon sources.
 
-## Core Features
+```bash
+git clone https://github.com/awesom3alex/osint-menace.git
+cd osint-menace
+python3 addons/fetch.py
+docker compose up -d --build
+```
 
-- Cyberpunk-inspired Flask web interface.
-- Docker-first deployment.
-- Auto-detection for mixed target lists.
-- Search modules for email, username, phone, full name, domain, IP address, and crypto wallet inputs.
-- Passive-first OSINT workflow.
-- Per-result and per-link case capture.
-- Case workspaces stored as JSON files under `data/cases`.
-- Delete individual case items when a result does not fit.
-- Delete an entire case with exact-name confirmation.
-- Export cases as JSON, Markdown, styled HTML, and PDF reports.
-- Unified addon searches with cancellation, progress, durable History, and tool health.
-- Case timelines, review states, reversible duplicate merging, and evidence provenance.
-- Verified case ZIP backup/restore without overwriting existing cases.
-- Download raw search results as JSON from the results page.
-- Filter generated results in the browser.
-- OSINT Links page with curated public OSINT resources.
-- API endpoint for future site integrations.
+Open **[http://localhost:8088](http://localhost:8088)**.
 
-## Safety Model
+The first build downloads tool dependencies and can take several minutes. Each Python addon uses its own virtual environment; Go tools are compiled from pinned sources. The running image is `osint-menace:0.2.0`.
 
-OSINT Menace is intentionally conservative by default.
+```bash
+# Check the running version
+curl http://localhost:8088/api/version
 
-Included by default:
+# Stop the web app; saved data remains in ./data
+docker compose down
+```
 
-- Public profile URL candidates.
-- Search-engine pivot links.
-- Gravatar checks.
-- DNS records.
-- RDAP/WHOIS-style public registration data where available.
-- TLS certificate inspection.
-- Certificate Transparency links and subdomain pivots.
-- Wayback/archive links.
-- Public reputation lookup links.
-- Wallet explorer links.
-- ENS lookup links.
-- Optional basic port scan only when explicitly enabled.
+Compose listens on all host interfaces at port 8088, allowing access from another computer on a trusted local network using the host’s LAN address. **There is no built-in authentication. Do not publish this port directly to the internet.**
 
-Excluded by default:
+See [INSTALL.md](INSTALL.md) for setup, troubleshooting, updates, and local development.
 
-- Credential hunting.
-- Password or breach account enumeration against private services.
-- Dark-web scraping.
-- Onion crawling.
-- Evasion logic.
-- Login-required automation.
-- Account discovery against private messenger or family-safety apps.
-- API-key-only enrichment modules.
-- Automated social media scraping that would require authenticated sessions.
+### Terminal interface
 
-## Search Types
-
-### Auto
-
-Auto mode accepts mixed targets separated by new lines, commas, or semicolons. It detects likely target types and runs the matching modules.
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt -r requirements-workspace.txt
+python menace.py --version
+python menace.py
+```
 
 Examples:
 
-```text
-person@example.com
-John P. Smith
-example.com
-1.1.1.1
-0x0000000000000000000000000000000000000000
-```
-
-### Email
-
-Email searches include:
-
-- Format validation.
-- Gravatar hash/profile pivot.
-- Domain extraction.
-- MX/provider clues.
-- SPF/DMARC DNS posture.
-- Search-engine query links.
-- Public mention pivots.
-
-### Username
-
-Username searches include:
-
-- Candidate profile URLs across common platforms.
-- GitHub, Reddit, YouTube, Pinterest, Tumblr, Telegram, Mastodon, Bluesky, and other public profile-style pivots.
-- Search-engine pivots.
-- Optional custom forum URL patterns with `{username}`.
-
-### Phone
-
-Phone searches include:
-
-- Format cleanup.
-- Region/country guess where possible.
-- Public search query generation.
-- Public mention pivots.
-
-Signal and Life360 account discovery are intentionally not automated.
-
-### Full Name
-
-Full-name searches include:
-
-- Search query generation.
-- LinkedIn/public profile pivots.
-- Public records search links.
-- Business filing search links.
-
-### Domain
-
-Domain searches include:
-
-- DNS A, AAAA, MX, NS, and TXT records.
-- SPF/DMARC posture.
-- RDAP public registration details where available.
-- TLS certificate metadata.
-- Certificate Transparency links.
-- Public CT-based subdomain discovery pivots.
-- Technology hints.
-- Archive/Wayback pivots.
-- Reputation links.
-
-### IP Address
-
-IP searches include:
-
-- IP validation.
-- Reverse DNS.
-- RDAP/ASN organization lookup.
-- Geo approximation where available.
-- Public reputation links.
-- Passive DNS links.
-- Optional basic port scan only when the user explicitly enables authorized scanning.
-
-### Crypto Wallet
-
-Wallet searches include:
-
-- Bitcoin/Ethereum format validation.
-- Explorer links.
-- Public transaction summary pivots.
-- ENS lookup pivots.
-
-## Cases
-
-Cases are the working folders for an investigation. They are stored in:
-
-```text
-data/cases/
-```
-
-The case workflow supports:
-
-- Creating a new case.
-- Saving a full search to a case.
-- Saving one result section to a case.
-- Saving one individual link to a case.
-- Selecting a case when multiple cases exist.
-- Auto-saving to the only case when exactly one case exists.
-- Keeping the user on the results page after adding to a case.
-- Deleting individual saved items.
-- Exporting the case.
-- Deleting the full case.
-
-## Reports
-
-Each case can be exported in three formats:
-
-- `JSON`: machine-readable case data.
-- `Markdown`: lightweight report text.
-- `HTML Report`: styled final report page with metadata, summaries, findings, links, notes, and print support.
-
-## OSINT Links
-
-The `/osint-links` page includes a curated set of OSINT categories and links derived from:
-
-https://start.me/p/L1rEYQ/osint4all
-
-Credit is shown at the bottom of the OSINT Links page. The local catalog is stored at:
-
-```text
-data/catalog/osint_links.json
-```
-
-The default catalog excludes obviously unsafe identity-generation, onion mirror, and scraped-data entries.
-
-## API
-
-Health check:
-
 ```bash
-curl http://localhost:8088/health
+python menace.py search exampleuser --type username
+python menace.py search example.com --type domain --json
+python menace.py create "Investigation One"
+python menace.py cases
+python menace.py export demo --format docx --output demo.docx
 ```
 
-Run a search:
+The terminal supports direct GitHub, Bluesky, GitLab, and Hacker News profile checks; phone numbering metadata; bounded Bitcoin/Ethereum summaries; public-page capture; record-source connectors; and candidate-link generation. Candidate links are not confirmation that an account exists or belongs to a particular person.
 
-```bash
-curl -sS http://localhost:8088/api/search \
-  -H 'Content-Type: application/json' \
-  -d '{"search_type":"auto","query":"person@example.com\nexampleuser\nexample.com"}'
-```
+See [CLI.md](CLI.md) for commands, provider coverage, limits, and credentials. Web addon scheduling and the web History database are separate from the terminal result workspace.
 
-Supported `search_type` values:
+## Included addons
 
-```text
-auto
-email
-username
-phone
-name
-domain
-ip
-wallet
-```
+Tools run only when explicitly selected. Outputs are leads to review, not identity or account-ownership proof.
 
-## Project Layout
-
-```text
-.
-├── app.py                  # Flask routes, case management, reports, API
-├── osint_tool.py           # Passive OSINT modules and helper functions
-├── Dockerfile              # Python/Gunicorn container
-├── docker-compose.yml      # Local service definition
-├── requirements.txt        # Python dependencies
-├── INSTALL.md              # Installation and operations guide
-├── README.md               # Product and developer overview
-├── data/
-│   ├── cases/              # Saved case JSON files
-│   └── catalog/            # OSINT Links catalog
-├── reference_scripts/      # Optional local reference notes/archives
-├── static/
-│   └── styles.css          # Cyberpunk UI styling
-└── templates/              # Flask/Jinja HTML templates
-```
-
-## GitHub Sources That Inspired This Application
-
-The following GitHub projects were reviewed as reference material for workflow ideas, target categories, UI/reporting concepts, defensive boundaries, or passive pivot patterns. OSINT Menace does not present these credits inside run results, but they are documented here for attribution and project history.
-
-| Project | GitHub Source | What It Informed |
+| Menace tool | Upstream project | Input / purpose |
 | --- | --- | --- |
-| AVTrack | https://github.com/marie-jeannesotho844/AVTrack | Report/export thinking and investigation-result workflow ideas from a tracking-oriented tool. |
-| E4GL30S1NT | https://github.com/C0MPL3XDEV/E4GL30S1NT | Modular OSINT CLI structure, username reconnaissance, email discovery, phone lookup, DNS/WHOIS-style pivots, and direct subcommand organization. |
-| IG-Detective | https://github.com/shredzwho/IG-Detective | Investigation management, reporting concepts, and the decision to avoid auth-walled social automation in the default app. |
-| LeakRecon | https://github.com/Webfooted-cupule499/LeakRecon | Leak/threat-intel workflow ideas, crypto tracker concepts, reporting structure, and safety boundaries around dark-web and credential modules. |
-| OSINT-Profiler | https://github.com/Despairing-australiancrawl83/OSINT-Profiler | Multi-target profiling ideas for emails, phone numbers, usernames, and saved investigative reports. |
-| OSINT Tool For TG / TeleOSINT | https://github.com/Flintgliboom/OSINT-Tool-For-TG | Telegram-related OSINT category awareness and the decision to keep private/API-gated account discovery out of the default workflow. |
-| VENOM | https://github.com/ghostport-sudo/venom | Email, username, phone, domain, web UI, export/report, and passive module organization ideas. |
-| CloudCheck | https://github.com/blacklanternsecurity/cloudcheck | Cloud/CDN/provider-awareness concepts for domain/IP enrichment and technology hints. |
-| cloudgaze | https://github.com/Roentgenographic-skyline37/cloudgaze | Dashboard/product UI ideas, filtering concepts, and report/export interaction patterns. |
-| Tookie OSINT | https://github.com/Alfredredbird/tookie-osint | Username discovery, profile URL coverage, internationalized OSINT-tool presentation, and platform-list thinking. |
+| Basic Search | [Sherlock](https://github.com/sherlock-project/sherlock) | Username profile checks |
+| Advanced Search | [Maigret](https://github.com/soxoj/maigret) | Broader username searches |
+| WhatsMyName Search | [Naminter](https://github.com/3xp0rt/naminter) | Username searches using WhatsMyName data |
+| Social Profile Analysis | [Social Analyzer](https://github.com/qeeqbox/social-analyzer) | Public-profile searches and analysis |
+| Platform Scanner | [Aliens’ Eye](https://github.com/arxhr007/Aliens_eye) | Username matches |
+| Instagram Intel | [Toutatis](https://github.com/megadose/toutatis) | Instagram details; requires `INSTAGRAM_SESSION_ID` |
+| Account Availability | [Socialscan](https://github.com/iojw/socialscan) | Username/email availability checks |
+| Account Search | [Blackbird](https://github.com/p1ngul1n0/blackbird) | Username/email searches |
+| Email Accounts | [Holehe](https://github.com/megadose/holehe) | Supported-service email registration checks |
+| Phone Intelligence | [PhoneInfoga](https://github.com/sundowndev/phoneinfoga) | Phone intelligence; some scanners need provider keys |
+| Phone Account Check | [Ignorant](https://github.com/megadose/ignorant) | Supported-service registration checks; separate calling code |
+| Phone Enrichment | [Clank](https://github.com/AnshumanAtrey/clank) | Local numbering, carrier-of-record, and region metadata |
 
-The local `reference_scripts/` folder also contains duplicate E4GL30S1NT archive material. Treat the table above as the deduplicated source list.
+See [addons/README.md](addons/README.md) for installation details, pinned revisions, source licenses, and limits. Many tools need no paid API key for their standard operation, but services can block, change, or rate-limit results. Toutatis needs a server-side session; SEC and CourtListener terminal connectors need their own configuration. Never commit credentials to Git.
 
-## Legal And Ethical Use
+## Typical investigation
 
-Use OSINT Menace only for lawful, defensive, and authorized research. Do not use it to harass people, bypass privacy controls, scrape private services, enumerate accounts where terms prohibit it, or scan systems without permission.
+1. Create a case and record the investigation’s scope and authorization.
+2. Run a Console search or select compatible tools in Addons/Unified Search.
+3. Review the findings and sources, then save useful observations to the case.
+4. Add verification notes and evidence. Review duplicate candidates before merging them.
+5. Select findings for reports, export the desired format, and download a case backup ZIP.
 
-The app generates public pivots and performs passive checks by default. If you enable the authorized port scan option, you are responsible for ensuring that you own or have permission to test the target.
+The interface keeps case saves in place so you can continue working. Cancellation stops unfinished addon work and retains available output, but cannot undo requests already sent to an external service.
 
-## License Notes
+## Backup preview
 
-Local development used archived reference projects under `reference_scripts/`, but the public GitHub package keeps that folder lightweight and ignores third-party zip archives by default. Those upstream projects have their own licenses and authors. Review each upstream license before redistributing, copying, or incorporating code from those projects.
+The example below uses synthetic data.
 
-OSINT Menace itself should maintain clear separation between:
+![Verified case backup preview using sample data](docs/images/backup-preview.jpg)
 
-- Original application code.
-- Curated public links.
-- Locally archived third-party reference material.
-- Future modules that may require separate licensing, API keys, or permission gates.
+From a case, choose **Download backup ZIP**. On the Cases page, choose **Restore a case backup**, inspect the verified preview, and restore as a new case.
 
-## See Also
+Case backups include notes, saved findings, reviews, timeline, duplicate groups, provenance, referenced evidence, and a Markdown report snapshot. Independent global History, server credentials, and deferred image-analysis originals are not included. Other reports can be regenerated after restore. Backups are not encrypted.
 
-- [INSTALL.md](INSTALL.md) for setup, Docker commands, troubleshooting, and local development.
+## Data and privacy
 
-## Created by Alex Berta
-- Alex Berta
-- Alex@DefensiveThinking.org 
-- Linkedin: /in/AlexanderBerta
-- Buy Me A Coffee - https://buymeacoffee.com/alexberta
+| Location | Contents |
+| --- | --- |
+| `data/cases/` | Case JSON, dossiers, reviews, notes, timeline, and merge records |
+| `data/evidence/` | Case screenshot attachments |
+| `data/workspace.sqlite3` | Web search History and observed tool health |
+| `data/cli_state.json` | Terminal workspace state |
+| `data/pending_backups/` | Temporary import previews, expiring after one hour |
+| `exports/` | Default terminal report exports |
+
+Runtime investigation data, credentials, downloaded addon source trees, and temporary artifacts are excluded from Git. Docker persists the host’s `./data` directory. For a full application backup including History, stop the service and back up that directory consistently.
+
+Selected tools and collectors contact their upstream services with the supplied target. Case evidence uploads are stored locally; Menace does not submit uploaded photos to image-search providers. Do not place sensitive investigation details in public issues, screenshots, or sample data.
+
+## Limits and operating scope
+
+- Generated URLs, tool matches, availability responses, and registration checks require independent verification.
+- Phone region/carrier output describes numbering metadata, not ownership or live location.
+- Network services can return partial results, false positives, errors, or rate limits. A successful process exit does not establish complete coverage.
+- Web addon execution uses two workers, bounded queues, and time/output limits. Keep the single Gunicorn process configuration unless the scheduler and file locking are redesigned for multiple processes.
+- Evidence hashes verify byte consistency; they do not prove that a source or screenshot is authentic. Legacy attachments may not have a historical hash.
+- This is an early local-network research application. Use only for lawful, authorized work, and respect service terms and access controls.
+
+Detailed limits and persistence behavior: [WORKSPACE_FEATURES.md](WORKSPACE_FEATURES.md).
+
+## Development and contributions
+
+```bash
+pip install -r requirements-dev.txt
+ruff check .
+
+docker compose exec -T menace python -m unittest discover -s tests -v
+docker compose exec -T menace python addons/check.py
+```
+
+Addon startup checks run local `--help` commands rather than querying public targets. Automated tests use temporary data and fixtures; the image-feature tests remain skipped while those features are disabled.
+
+Report bugs or suggest improvements through [GitHub Issues](https://github.com/awesom3alex/osint-menace/issues). Include the version, reproduction steps, and redacted error output. Contributions should preserve source attribution, readable results, bounded execution, cancellation, and case/report compatibility.
+
+## License and credits
+
+OSINT Menace is licensed under [Apache License 2.0](LICENSE). Integrated tools and dependencies retain their own licenses. Pinned upstream sources and their licenses are fetched separately rather than vendored into this repository. Review those licenses before redistributing a combined build. Test fixtures have source notes in [tests/fixtures/README.md](tests/fixtures/README.md).
+
+Created by **Alex Berta · Defensive Thinking**.
+
+- Contact: Alex@DefensiveThinking.org
+- LinkedIn: [AlexanderBerta](https://www.linkedin.com/in/AlexanderBerta/)
+- Support: [Buy Me a Coffee](https://buymeacoffee.com/alexberta)
+
+Documentation: [Installation](INSTALL.md) · [Terminal guide](CLI.md) · [Workspace details](WORKSPACE_FEATURES.md) · [Addon details](addons/README.md) · [Release notes](CHANGELOG.md)

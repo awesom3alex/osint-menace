@@ -103,6 +103,8 @@ def upload(case_id, search_id, section_index, finding_index):
         return jsonify(error="Use a valid PNG, JPEG, or WebP image under 20 megapixels."), 400
     with app.CASE_LOCK:
         case = app.load_case(case_id)
+        if case.get("is_demo"):
+            abort(403, "The demo case is read-only.")
         finding = locate(case, search_id, section_index, finding_index)
         evidence = finding.setdefault("evidence", [])
         if len(evidence) >= 10:

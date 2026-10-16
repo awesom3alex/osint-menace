@@ -202,18 +202,8 @@ def render(sections: list[Section], output_json: bool) -> None:
         print(json.dumps(payload, indent=2, sort_keys=True))
         return
 
-    for section in sections:
-        print(f"\n## {section.name}")
-        if not section.findings and not section.links and not section.notes:
-            print("- No findings.")
-        for finding in section.findings:
-            source = f" ({finding.source})" if finding.source else ""
-            print(f"- {finding.label}: {finding.value}{source}")
-        for link in section.links:
-            source = f" ({link.source})" if link.source else ""
-            print(f"- {link.label}: {link.value}{source}")
-        for note in section.notes:
-            print(f"- Note: {note}")
+    from terminal_output import print_results
+    print_results(payload["sections"])
 
 
 def email_report(email: str) -> Section:

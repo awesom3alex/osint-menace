@@ -7,7 +7,8 @@
     ('Tool Health', '/tools'),
     ('Cases', '/cases'),
     ('OSINT Links', '/osint-links'),
-    ('Help', '/help')
+    ('Help', '/help'),
+    ('Demo', '/demo')
   ] %}
   <a href="{{ href }}"{% if request.path == href or (href != '/' and request.path.startswith(href + '/')) %} aria-current="page"{% endif %}>{{ label }}</a>
   {% endfor %}

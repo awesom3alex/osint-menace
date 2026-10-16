@@ -75,6 +75,11 @@ def validate_case(case):
     for key in ("name", "created_at", "updated_at"):
         require(text(case.get(key), 2000), "Invalid case " + key + ".")
     require(text(case.get("notes", ""), 50000), "Invalid case notes.")
+    dossier = case.get("dossier", {})
+    require(
+        isinstance(dossier, dict) and all(text(value, 20000) for value in dossier.values()),
+        "Invalid dossier fields.",
+    )
     searches = case.get("searches")
     require(isinstance(searches, list) and len(searches) <= 5000, "Invalid search list.")
     refs = set()

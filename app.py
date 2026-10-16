@@ -13,7 +13,17 @@ from functools import wraps
 from pathlib import Path
 from typing import Any
 
-from flask import Flask, Response, abort, jsonify, redirect, render_template, request, url_for
+from flask import (
+    Flask,
+    Response,
+    abort,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    send_file,
+    url_for,
+)
 
 import case_workflow
 import osint_tool
@@ -21,14 +31,21 @@ import workspace_store as store
 from addon_tools import bp as addons_blueprint
 from case_backups import bp as backups_blueprint
 from case_features import bp as case_features_blueprint
+from demo import DEMO_ID, demo_case
+from dossier import SECTIONS, dossier_values, markdown_dossier
 from pdf_reports import bp as pdf_blueprint
 from readable_results import display_scalar, field_label, readable_text, structured_value
+from version import RELEASE_NAME
+from word_report import build_word_report
 from workspace_features import bp as workspace_blueprint
 
 APP_VERSION = (Path(__file__).parent / "VERSION").read_text().strip()
 app = Flask(__name__)
 app.config["APP_VERSION"] = APP_VERSION
 app.jinja_env.globals["app_version"] = APP_VERSION
+app.jinja_env.globals.update(
+    release_name=RELEASE_NAME, dossier_sections=SECTIONS, dossier_values=dossier_values
+)
 app.jinja_env.filters.update(
     field_label=field_label,
     display_scalar=display_scalar,
@@ -44,6 +61,15 @@ for blueprint in (
     pdf_blueprint,
 ):
     app.register_blueprint(blueprint)
+
+
+@app.before_request
+def protect_demo_case():
+    if (
+        request.method not in ("GET", "HEAD", "OPTIONS")
+        and (request.view_args or {}).get("case_id") == DEMO_ID
+    ):
+        abort(403, "The demo case is read-only.")
 
 
 @app.get("/api/version")
@@ -226,6 +252,8 @@ def case_path(case_id: str) -> Path:
 
 
 def load_case(case_id: str) -> dict[str, Any]:
+    if case_id == DEMO_ID:
+        return demo_case()
     path = case_path(case_id)
     if not path.exists():
         abort(404)
@@ -246,6 +274,8 @@ def load_case(case_id: str) -> dict[str, Any]:
 
 
 def save_case(case_data: dict[str, Any]) -> None:
+    if case_data.get("id") == DEMO_ID:
+        abort(403, "The demo case is read-only.")
     CASES_DIR.mkdir(parents=True, exist_ok=True)
     path = case_path(case_data["id"])
     with tempfile.NamedTemporaryFile(mode="w", dir=CASES_DIR, suffix=".tmp", delete=False) as temp:
@@ -349,10 +379,21 @@ def render_markdown_report(case_data: dict[str, Any]) -> str:
         f"- Searches: {len(case_data.get('searches', []))}",
         "",
     ]
+    lines.extend(markdown_dossier(case_data))
     notes = case_data.get("notes")
     if notes:
         lines.extend(["## Case Notes", "", notes, ""])
     for search in case_data.get("searches", []):
+        if search.get("review_status") or search.get("analyst_notes") or search.get("tags"):
+            lines.extend(
+                [
+                    "",
+                    "Review status: " + search.get("review_status", "unreviewed"),
+                    "Tags: " + ", ".join(search.get("tags", [])),
+                    "Analyst notes: " + search.get("analyst_notes", ""),
+                    "",
+                ]
+            )
         lines.extend(
             [
                 f"## Search: {search.get('query')}",
@@ -418,6 +459,11 @@ def help_page():
     return render_template("help.html", search_types=SEARCH_TYPES, modules=MODULE_REGISTRY)
 
 
+@app.get("/demo")
+def demo_page():
+    return render_template("case.html", case=demo_case())
+
+
 @app.get("/osint-links")
 def osint_links_page():
     catalog = load_osint_links()
@@ -445,6 +491,29 @@ def case_detail(case_id: str):
         duplicates=case_workflow.duplicate_groups(case),
         merged_groups=merged_groups,
         merged_refs=merged_refs,
+    )
+
+
+@app.route("/cases/<case_id>/dossier", methods=["GET", "POST"])
+@case_locked
+def edit_dossier(case_id: str):
+    case_data = load_case(case_id)
+    if request.method == "POST":
+        values = {
+            key: request.form.get(key, "").strip() for _, fields in SECTIONS for key, _ in fields
+        }
+        if any(len(value) > 20000 for value in values.values()):
+            abort(400, "Each dossier field must be at most 20,000 characters.")
+        case_data["dossier"] = values
+        case_workflow.event(case_data, "dossier_updated", "Dossier updated.")
+        case_data["updated_at"] = utc_now()
+        save_case(case_data)
+        return redirect(url_for("edit_dossier", case_id=case_id, saved="1"))
+    return render_template(
+        "dossier.html",
+        case=case_data,
+        values=dossier_values(case_data),
+        saved=request.args.get("saved") == "1",
     )
 
 
@@ -590,6 +659,20 @@ def export_case_markdown(case_id: str):
 @app.get("/cases/<case_id>/report.html")
 def export_case_html(case_id: str):
     return render_template("report.html", case=case_workflow.report_case(load_case(case_id)))
+
+
+@app.get("/cases/<case_id>/report.docx")
+def export_case_word(case_id: str):
+    case_data = load_case(case_id)
+    filename = (
+        re.sub(r"[^A-Za-z0-9_.-]+", "-", case_data.get("name", "case")).strip("-").lower() or "case"
+    )
+    return send_file(
+        build_word_report(case_data),
+        as_attachment=True,
+        download_name=filename + "-report.docx",
+        mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    )
 
 
 @app.post("/api/search")
