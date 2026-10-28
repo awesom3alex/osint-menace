@@ -30,13 +30,20 @@ def export_case(case, kind, output):
         if kind == "html":
             from bs4 import BeautifulSoup
             with core.app.test_request_context():
-                soup = BeautifulSoup(core.render_template("report.html", case=case), "html.parser")
+                state = case.get("investigation", {})
+                if case.get("report_builder") is not None or state.get("assessments") or state.get("redaction", {}).get("enabled"):
+                    from graph_reports import legend_ink
+                    from report_builder import compose
+                    html = core.render_template("report_preview.html", legend_ink=legend_ink, **compose(case))
+                else:
+                    html = core.render_template("report.html", case=case)
+                soup = BeautifulSoup(html, "html.parser")
             for link in soup.find_all("link", rel="stylesheet"):
                 filename = Path(link["href"]).name
                 style = soup.new_tag("style")
                 style.string = (Path(core.app.static_folder) / filename).read_text(encoding="utf-8")
                 link.replace_with(style)
-            for tag in soup.select(".report-actions, script"):
+            for tag in soup.select(".report-actions, .report-controls, script"):
                 tag.decompose()
             content = str(soup)
         else:

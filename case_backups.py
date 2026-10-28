@@ -75,6 +75,29 @@ def validate_case(case):
     for key in ("name", "created_at", "updated_at"):
         require(text(case.get(key), 2000), "Invalid case " + key + ".")
     require(text(case.get("notes", ""), 50000), "Invalid case notes.")
+    if "investigation" in case:
+        from investigation import validate as validate_investigation
+        validate_investigation(case["investigation"])
+    builder = case.get("report_builder")
+    if builder is not None:
+        require(isinstance(builder, dict), "Invalid report builder settings.")
+        for key in ("order", "selected"):
+            require(isinstance(builder.get(key), list) and len(builder[key]) <= 100000
+                    and all(text(item, 5000) for item in builder[key]), "Invalid report content order.")
+            require(len(builder[key]) == len(set(builder[key])), "Duplicate report content IDs.")
+        require(set(builder["selected"]) <= set(builder["order"]), "Invalid report selection.")
+        summary = builder.get("summary")
+        require(isinstance(summary, dict) and all(text(summary.get(key), 20000)
+                for key in ("purpose", "findings", "questions")), "Invalid executive summary.")
+    from case_graphs import validate_graph
+
+    graphs = case.get("graphs", [])
+    require(isinstance(graphs, list) and len(graphs) <= 20, "Invalid case graphs.")
+    graph_ids = set()
+    for graph in graphs:
+        validate_graph(graph)
+        require(graph["id"] not in graph_ids, "Duplicate graph ID.")
+        graph_ids.add(graph["id"])
     dossier = case.get("dossier", {})
     require(
         isinstance(dossier, dict) and all(text(value, 20000) for value in dossier.values()),

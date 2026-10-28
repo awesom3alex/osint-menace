@@ -18,10 +18,12 @@
           <p class="product-line">A Defensive Thinking Project.</p>
         </div>
         <div class="report-actions">{% include 'primary_nav.html' %}</div>
-        <nav class="top-nav report-actions" aria-label="Report actions">
+        <nav class="top-nav case-actions report-actions" aria-label="Report actions">
           <a href="{{ url_for('case_detail', case_id=case.id) }}">Case</a>
-          <a href="{{ url_for('export_case_json', case_id=case.id) }}">JSON</a><a href="{{ url_for('pdf_report.export_pdf',case_id=case.id) }}">Download PDF</a><a href="{{ url_for('export_case_word',case_id=case.id) }}">Download Word</a>
+          <details class="action-menu" data-nav-menu><summary>Download report</summary><div class="action-dropdown">
+          {% if case.is_demo %}<a href="{{ url_for('report_builder.preview',case_id=case.id) }}">Preview report</a>{% else %}<a href="{{ url_for('report_builder.editor',case_id=case.id) }}">Build report</a>{% endif %}<a href="{{ url_for('export_case_json', case_id=case.id) }}">JSON</a><a href="{{ url_for('pdf_report.export_pdf',case_id=case.id) }}">Download PDF</a><a href="{{ url_for('export_case_word',case_id=case.id) }}">Download Word</a>
           <a href="{{ url_for('export_case_markdown', case_id=case.id) }}">Markdown</a>
+          </div></details>
           <a href="javascript:window.print()">Print</a>
         </nav>
       </header>

@@ -1,5 +1,65 @@
 # Changelog
 
+## 0.3.0 — 2026-10-28
+
+**Now With 37% More Menace — Statistics were fabricated.**
+
+- Added saved graph views, inclusive relationship date filters with explicit undated handling, and persistent named milestones with automatic pre-restore snapshots.
+- Added opt-in graph views, legends, relationship details, and linked evidence/screenshots to case PDF and Word reports; report exclusions also apply to linked graph content.
+- Added case-local Cytoscape graphs with editable relationships, draggable and pinnable objects, photos, predefined and custom typed fields, reusable graph-local field templates, and editable legends.
+- Added finding-to-graph actions, original finding links, undo/redo, PNG/JSON exports, concurrent-save conflict checks, and validated graph persistence in case backups and restores.
+- Added graph search and filters, context menus, drag-to-connect handles, autosave and browser draft recovery, reversible branch/group collapse, annotations, duplicate suggestions with reviewed merging, evidence previews, relationship evidence links and dates, and a navigable mini-map.
+- Simplified graph controls with action menus, folded field settings, and on-demand guidance; grouped shared navigation into Search, Investigations, Tools, and Help, and consolidated case/report exports.
+- Bundled Cytoscape.js locally; documented graph workflows and limits in `docs/CASE_GRAPHS.md`.
+
+### Report builder — 2026-10-27
+
+- Added case-specific executive summaries with investigation purpose, key findings, and outstanding questions.
+- Added report selection and ordering for findings, screenshots, notes, dossier sections, and graphs, without altering the original records.
+- Added consistent numbered evidence references and a source appendix across preview, PDF, Word, and Markdown exports.
+- Added a content preview, exact PDF preview, and warnings for missing summary sections, missing screenshots, and empty graph views.
+- Preserved report exclusions and saved graph views; report settings persist in case backups, with conflict protection for concurrent edits.
+- Validation limited to three focused checks: report integration coverage, live browser workflow, and rendered PDF/Word layout review.
+
+### Fictional investigation demo — 2026-10-27
+
+- Replaced the original two-record demo with the Cedar Trail Makers training investigation: six synthetic source records, fictional people and contact details, a relationship graph, two labeled synthetic captures, an executive summary, and numbered source references.
+- Demonstrates supported connections, unresolved account attribution, and a ruled-out similar-name profile. All URLs use reserved example domains and phone numbers use the fictional 202-555-01xx range.
+- Added read-only report preview navigation and bundled demo capture delivery. Existing demo mutation protection remains in place.
+- Generated the sample investigation PDF and completed three focused checks: data/routes/read-only behavior, rendered PDF review, and the live demo/report workflow.
+
+### Investigation workspace — 2026-10-28
+
+- Added chronological, filterable evidence and relationship timelines with linked source records, graph connection focus, and analyst events/notes.
+- Added finding and graph connection confidence assessments with reasoning, supporting findings, and numbered report citations.
+- Added case tasks with due dates, source links, status tracking, overdue flags, and activity records. Tasks and analyst events can be selected in the report builder.
+- Added literal-text redaction across PDF, Word, HTML, and Markdown reports, including report titles and safe download filenames. Redacted reports omit images while preserving original evidence and case records.
+- Added backup validation, stale-edit protection, sample demo assessments/tasks, and native submission for investigation forms.
+- Validation limited to three focused checks: integration coverage, actual PDF/Word content and layout, and live browser workflows.
+
+### Case navigation and preparation — 2026-10-28
+
+- Added case-wide search for evidence, identifiers, graph objects/connections, notes, confidence reasoning, and tasks, with type filters, pagination, and normalized phone-number matching.
+- Added graph entity profiles combining identifiers, explicit connections, evidence, confidence assessments, and linked tasks. Profiles do not infer identity from matching names.
+- Added advisory review before sharing based on selected report content and saved graph views, with links to unresolved findings, source issues, unsupported connections, missing report content, and unfinished tasks.
+- Added blank, digital footprint, organization, and incident case starters. Nonblank templates create independent graphs, field definitions, tasks, and report outlines without changing existing cases.
+- Grouped entity profiles, timeline/tasks, and sharing review under Case tools, with search directly accessible in the case header.
+- Validation limited to three focused checks: case-tools integration coverage, live search-to-profile navigation, and live template creation/sharing review.
+
+### Setup script
+
+- Added `install.sh` for macOS, Linux, and WSL2 with Docker/Compose as the only host runtime prerequisites. It fetches pinned addon sources using a Docker helper, builds and starts the service, and can open the browser.
+- Existing installations receive a stopped-service data backup outside the build context, a retained previous image, and automatic image rollback on upgrade failure. Three bounded checks cover health/version, original case/evidence/catalog preservation, and local screens without external OSINT searches.
+
+### Release preparation
+
+- Replaced the earlier announcement artwork with the supplied Steve image and featured it in the README for v0.3.0.
+- Fixed terminal HTML exports to respect saved report composition and redaction, synchronized graph/report inclusion with concurrent-edit protection, and retained merged-source provenance while honoring report exclusions.
+
+### Documentation
+
+- Updated the install guide and current workspace/addon documentation for v0.3.0, including clean builds, stopped-service data backups, rollback, current case/report tools, production versus development ports, and three focused installation checks.
+
 ## 0.2.0 — 2026-10-16
 
 ### Added

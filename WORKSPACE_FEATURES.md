@@ -1,13 +1,17 @@
-# Investigation workspace — 0.2.0
+# Investigation workspace — v0.3.0
 
-The existing Console and Addons remain available. New destinations:
+Current release: **v0.3.0**. Production runs at **http://localhost:8088** using `osint-menace:0.3.0`. The Console and Addons remain available alongside these workspace destinations:
 
 - `/unified`: one username, email, or telephone target with multiple selected compatible tools. Two workers execute tools; up to 32 jobs may be queued/running. Each tool keeps its 180-second and output limits. Unsupported tools, missing installations, and missing Toutatis sessions are rejected before any part of a batch starts.
-- `/history`: successful Console/API searches and every addon/unified launch are stored under `data/workspace.sqlite3`. Reopen a search without rerunning tools. The list shows up to 200 matching searches; older records remain in the database. History begins with this update and does not reconstruct earlier unsaved searches. Search history stores captured output but not command arguments or credentials. Tool output is redacted for the configured Instagram session. SQLite files are local and mounted with `data/`.
+- `/history`: successful Console/API searches and every addon/unified launch are stored under `data/workspace.sqlite3`. Reopen a search without rerunning tools. The list shows up to 200 matching searches; older records remain in the database. History recording was introduced in v0.2.0 and does not reconstruct earlier unsaved searches. Search history stores captured output but not command arguments or credentials. Tool output is redacted for the configured Instagram session. SQLite files are local and mounted with `data/`.
 - `/tools`: installation and session presence, local CLI startup checks, last run/outcome, last successful exit, and observed rate-limit messages. Credentials are not validated. A successful exit is not proof of platform coverage or accuracy. Local startup checks run `--help` and do not query targets.
 - Case findings now support Unverified / Confirmed / False positive, notes, and report inclusion. New addon captures split structured top-level facts and reported text URLs into separately reviewable findings. Original tool output stays in History. Existing saved case values are preserved. Saving a review or adding a result stays in place.
 - Each finding accepts up to ten PNG/JPEG/WebP screenshots, up to 10 MB and 20 megapixels each. Images are decoded and re-encoded as PNG in `data/evidence/<case-id>/`; metadata is stripped. Source URL/caption and attachment time are retained. Screenshots are operator-provided evidence, not automatic webpage captures.
-- Download PDF from a case. The PDF includes selected findings, source attribution/URLs, retrieval and review timestamps, verification status, notes, and screenshots with page numbers. HTML and Markdown exports respect report selection and include review context. JSON exports retain the full original case. Large PDF finding values use a clearly marked 40,000-character excerpt; full data remains in the JSON export.
+- Download PDF from a case. The PDF includes selected findings, source attribution/URLs, retrieval and review timestamps, verification status, notes, and screenshots with page numbers. HTML and Markdown exports respect report selection and include review context. JSON exports retain the full original case. The legacy PDF path limits large finding values to a clearly marked 40,000-character excerpt. Saved report-builder compositions use the shared ordered report path. JSON exports retain original captured values.
+
+## Setup
+
+Run `bash install.sh` from the source folder with Docker and Compose v2 already available. The installer fetches pinned addon sources, builds the application, backs up existing data, starts the service, and runs three bounded checks. `--no-open` skips browser launch; `--help` prints usage. See [installer instructions](INSTALL.md#using-installsh) for supported platforms, upgrade behavior, backups, and recovery.
 
 ## Persistence and operation
 
@@ -17,19 +21,24 @@ The service retains the existing local-network binding at port 8088. User authen
 
 ## Validation
 
-```sh
-docker compose exec -T menace python -m unittest discover -s tests -v
-```
+Use the three focused installation checks in [INSTALL.md](INSTALL.md#version-and-release-checks): service/version, browser and existing data, and one representative workflow. Routine upgrades do not require a full automated suite or all-addon smoke run. For development, choose the targeted tests for the behavior being changed; fixtures use temporary databases, cases, and screenshots.
 
-Tests use temporary databases, cases, and screenshots. They cover batch validation and durable reopening, restart recovery, concurrent SQLite writes, individual finding reviews, report exclusions, screenshot validation/access, independent PDF text extraction, rate-limit detection, and local health checks, alongside the previous addon checks.
+Runtime workspace dependencies are in `requirements-workspace.txt`; the Dockerfile installs them after the isolated addon layers. Production uses a single Gunicorn worker with four threads. A stopped-service backup of all `data/` is the recommended upgrade snapshot.
 
-For a fictional PDF layout fixture:
+## v0.3.0 case and report capabilities
 
-```sh
-docker compose exec -T menace python scripts/sample_case_report.py
-```
+| Destination | Behavior | Guide |
+| --- | --- | --- |
+| Case graphs | Editable objects, custom fields, photos, legends, search, filters, saved views, and milestones | [Graphs](docs/CASE_GRAPHS.md) |
+| Report builder and preview | Executive summary, content selection/order, numbered evidence, colored legend labels, PDF/Word/HTML/Markdown exports | [Reports](docs/REPORT_BUILDER.md) |
+| Investigation workspace | Chronological events, analyst notes, confidence/reasoning with sources, task status and due dates, report redaction | [Workflow](docs/INVESTIGATION_WORKSPACE.md) |
+| Search case and entity profiles | Search saved case content and view explicitly linked identifiers, evidence, connections, confidence, and tasks | [Case tools](docs/CASE_TOOLS.md) |
+| Review before sharing | Advisory review of selected report content, source gaps, unresolved findings/connections, and unfinished tasks | [Case tools](docs/CASE_TOOLS.md) |
+| New case templates | Blank, digital footprint, organization, and incident starters with independent fields, graph, tasks, and report outline | [Case tools](docs/CASE_TOOLS.md) |
 
-Runtime Python dependencies for these features are in `requirements-workspace.txt`; the Dockerfile installs them after the isolated tool layers.
+Graphs, report settings, timeline notes, confidence assessments, tasks, and redaction settings remain in case JSON and survive case backup/restore. Search and profiles use original case content; finding exclusions affect reports, not internal investigation access. Profiles do not automatically equate people or accounts that share a name.
+
+Redaction replaces specified literal text and omits all graph figures, photos, and screenshots while enabled. It does not anonymize JSON, backups, entity profiles, or internal sharing-review pages. Review exports before sharing. The demo at `/demo` contains fictional people, reserved example domains, synthetic captures, and sample tasks/assessments; modifications to it remain blocked.
 
 ## Image features deferred
 

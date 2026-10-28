@@ -1,0 +1,4 @@
+# Bootstrap host-independent source fetching and stopped-service backups.
+FROM python:3.12-slim-bookworm
+RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates tar && rm -rf /var/lib/apt/lists/*
+WORKDIR /workspace

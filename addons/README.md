@@ -1,10 +1,9 @@
 # Installed addon integration
 
-Restore the exact upstream sources before building from a clean checkout:
+From a source checkout or extracted archive, run the setup script. Docker must already be running; host Python and Git are not required:
 
 ```sh
-python3 addons/fetch.py
-docker compose up -d --build
+bash install.sh
 ```
 
 Open http://localhost:8088/addons. All twelve sources are pinned by commit in
@@ -54,16 +53,9 @@ are not yet locked.
 
 ## Validation
 
-```sh
-docker compose exec -T menace python -m unittest discover -s tests -v
-```
+OSINT Menace v0.3.0 retains the existing pinned addon inventory. Use the three focused installation checks in [INSTALL.md](../INSTALL.md#version-and-release-checks) after an upgrade. Select an individual tool's startup check only when it is relevant; do not run every addon automatically. Local startup checks use `--help` and do not establish external platform coverage or verify credentials.
 
-This exercises inventory, rendered routes, target and option validation, secret
-handling, capacity limits, actual offline Clank execution, failed subprocess status,
-and case capture using temporary case storage. It does not query real people or
-verify external platform coverage. Full installation smoke checks also invoke each
-upstream CLI's help command without running a public-target search.
-
+For addon code changes, choose the targeted fixture tests for the affected tool. Runtime results may still be incomplete, rate limited, or inaccurate even when installation succeeds.
 
 ## Recommended next integrations (reviewed 2026-10-16; not installed)
 

@@ -27,6 +27,8 @@
             Notes
             <textarea name="case_notes" placeholder="Scope, authorization, objectives, or analyst notes"></textarea>
           </label>
+          <label>Starting template<select name="case_template">{% for key,template in case_templates.items() %}<option value="{{ key }}">{{ template.name }}</option>{% endfor %}</select></label>
+          <details><summary>What each template includes</summary>{% for key,template in case_templates.items() %}<p><strong>{{ template.name }}</strong> — {{ template.description }}</p>{% endfor %}</details>
           <button type="submit">Create Case</button>
         </form>
       </section>

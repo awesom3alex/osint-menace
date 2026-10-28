@@ -25,12 +25,16 @@ from flask import (
     url_for,
 )
 
+import case_tools
 import case_workflow
+import investigation
 import osint_tool
+import report_builder
 import workspace_store as store
 from addon_tools import bp as addons_blueprint
 from case_backups import bp as backups_blueprint
 from case_features import bp as case_features_blueprint
+from case_graphs import bp as graphs_blueprint
 from demo import DEMO_ID, demo_case
 from dossier import SECTIONS, dossier_values, markdown_dossier
 from pdf_reports import bp as pdf_blueprint
@@ -56,9 +60,13 @@ for blueprint in (
     addons_blueprint,
     workspace_blueprint,
     case_features_blueprint,
+    graphs_blueprint,
     case_workflow.bp,
     backups_blueprint,
     pdf_blueprint,
+    report_builder.bp,
+    investigation.bp,
+    case_tools.bp,
 ):
     app.register_blueprint(blueprint)
 
@@ -303,7 +311,7 @@ def list_cases() -> list[dict[str, Any]]:
     return cases
 
 
-def create_case(name: str, notes: str = "") -> dict[str, Any]:
+def create_case(name: str, notes: str = "", template_key: str = "blank") -> dict[str, Any]:
     now = utc_now()
     case_data = {
         "id": str(uuid.uuid4()),
@@ -313,6 +321,7 @@ def create_case(name: str, notes: str = "") -> dict[str, Any]:
         "updated_at": now,
         "searches": [],
     }
+    case_tools.prepare_template(case_data, template_key)
     case_workflow.event(case_data, "case_created", "Case created.")
     save_case(case_data)
     return case_data
@@ -367,6 +376,8 @@ def make_search_record(
 
 
 def render_markdown_report(case_data: dict[str, Any]) -> str:
+    if case_data.get("report_builder") is not None or case_data.get("investigation", {}).get("assessments") or case_data.get("investigation", {}).get("redaction", {}).get("enabled"):
+        return report_builder.markdown(case_data)
     case_data = case_workflow.report_case(case_data)
     lines = [
         f"# OSINT Menace Case Report: {case_data.get('name', 'Untitled Case')}",
@@ -473,11 +484,14 @@ def osint_links_page():
 @app.route("/cases", methods=["GET", "POST"])
 def cases_page():
     if request.method == "POST":
+        template_key = request.form.get("case_template", "blank")
+        if template_key not in case_tools.TEMPLATES:
+            abort(400, "Choose a valid case template.")
         case_data = create_case(
-            request.form.get("case_name", ""), request.form.get("case_notes", "")
+            request.form.get("case_name", ""), request.form.get("case_notes", ""), template_key
         )
         return redirect(url_for("case_detail", case_id=case_data["id"]))
-    return render_template("cases.html", cases=list_cases())
+    return render_template("cases.html", cases=list_cases(), case_templates=case_tools.TEMPLATES)
 
 
 @app.get("/cases/<case_id>")
@@ -647,7 +661,7 @@ def export_case_json(case_id: str):
 def export_case_markdown(case_id: str):
     case_data = load_case(case_id)
     filename = (
-        re.sub(r"[^A-Za-z0-9_.-]+", "-", case_data.get("name", "case")).strip("-").lower() or "case"
+        re.sub(r"[^A-Za-z0-9_.-]+", "-", ("shareable-investigation" if case_data.get("investigation", {}).get("redaction", {}).get("enabled") else case_data.get("name", "case"))).strip("-").lower() or "case"
     )
     return Response(
         render_markdown_report(case_data),
@@ -658,6 +672,9 @@ def export_case_markdown(case_id: str):
 
 @app.get("/cases/<case_id>/report.html")
 def export_case_html(case_id: str):
+    case = load_case(case_id)
+    if case.get("report_builder") is not None or case.get("investigation", {}).get("assessments") or case.get("investigation", {}).get("redaction", {}).get("enabled"):
+        return report_builder.preview(case_id)
     return render_template("report.html", case=case_workflow.report_case(load_case(case_id)))
 
 
@@ -665,7 +682,7 @@ def export_case_html(case_id: str):
 def export_case_word(case_id: str):
     case_data = load_case(case_id)
     filename = (
-        re.sub(r"[^A-Za-z0-9_.-]+", "-", case_data.get("name", "case")).strip("-").lower() or "case"
+        re.sub(r"[^A-Za-z0-9_.-]+", "-", ("shareable-investigation" if case_data.get("investigation", {}).get("redaction", {}).get("enabled") else case_data.get("name", "case"))).strip("-").lower() or "case"
     )
     return send_file(
         build_word_report(case_data),

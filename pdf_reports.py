@@ -13,7 +13,17 @@ from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import inch
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import HRFlowable, Image, KeepTogether, Paragraph, SimpleDocTemplate, Spacer
+from reportlab.platypus import (
+    HRFlowable,
+    Image,
+    KeepTogether,
+    PageBreak,
+    Paragraph,
+    SimpleDocTemplate,
+    Spacer,
+    Table,
+    TableStyle,
+)
 
 import case_features
 import case_workflow
@@ -23,6 +33,9 @@ bp = Blueprint("pdf_report", __name__)
 
 
 def generate(case):
+    if case.get("report_builder") is not None or case.get("investigation", {}).get("assessments") or case.get("investigation", {}).get("redaction", {}).get("enabled"):
+        from report_builder import pdf
+        return pdf(case)
     case = case_workflow.report_case(case)
     import reportlab
 
@@ -218,13 +231,17 @@ def generate(case):
                         story.extend(
                             [
                                 Spacer(1, 8),
-                                image,
-                                paragraph(
-                                    "Evidence: "
-                                    + evidence.get("caption", "Screenshot")
-                                    + "\n"
-                                    + case_workflow.evidence_text(evidence),
-                                    muted,
+                                KeepTogether(
+                                    [
+                                        image,
+                                        paragraph(
+                                            "Evidence: "
+                                            + evidence.get("caption", "Screenshot")
+                                            + "\n"
+                                            + case_workflow.evidence_text(evidence),
+                                            muted,
+                                        ),
+                                    ]
                                 ),
                             ]
                         )
@@ -256,6 +273,51 @@ def generate(case):
             )
         )
 
+    from graph_reports import attachments, legend_ink, report_details, sections, summary_lines
+
+    for graph_section in sections(case):
+        story.append(PageBreak())
+        story.append(paragraph("Case graph: " + graph_section["graph"]["name"], heading))
+        figure = Image(BytesIO(graph_section["image"]))
+        factor = min(doc.width / figure.imageWidth, 4.7 * inch / figure.imageHeight)
+        figure.drawWidth, figure.drawHeight = (
+            figure.imageWidth * factor,
+            figure.imageHeight * factor,
+        )
+        story.append(figure)
+        for line in summary_lines(graph_section)[:2]:
+            story.append(paragraph(line, muted))
+        filters = graph_section["filters"]
+        if filters.get("from") or filters.get("to"):
+            story.append(paragraph(
+                f"Date range: {filters.get('from') or 'Any date'} to {filters.get('to') or 'Any date'}. "
+                + ("Undated connections included." if filters.get("includeUndated", True) else "Undated connections excluded."), muted))
+        story.append(paragraph("Graph legend", finding_style))
+        for entry in graph_section["graph"]["legend"]:
+            label = Paragraph(
+                '<font color="' + legend_ink(entry["color"]) + '" backColor="' + entry["color"] + '"> '
+                + escape(entry["type"]) + ' </font>', body)
+            row = Table([[label, paragraph(entry["description"])]], colWidths=[doc.width * .27, doc.width * .73])
+            row.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"),
+                                    ("BOTTOMPADDING", (0, 0), (-1, -1), 5)]))
+            story.append(row)
+        for title_text, records in report_details(graph_section):
+            if not records:
+                continue
+            story.append(paragraph(title_text, heading))
+            for label, value in records:
+                story.append(paragraph(label, finding_style))
+                story.append(paragraph(value))
+
+        for path, caption in attachments(graph_section, case["id"]):
+            screenshot = Image(str(path))
+            factor = min(doc.width / screenshot.imageWidth, 3 * inch / screenshot.imageHeight, 1)
+            screenshot.drawWidth, screenshot.drawHeight = (
+                screenshot.imageWidth * factor,
+                screenshot.imageHeight * factor,
+            )
+            story.extend([screenshot, paragraph("Supporting screenshot: " + str(caption), muted)])
+
     def footer(canvas, document):
         canvas.saveState()
         canvas.setStrokeColor(colors.HexColor("#cbd5e1"))
@@ -278,7 +340,7 @@ def export_pdf(case_id):
         case = app.load_case(case_id)
     pdf = generate(case)
     filename = (
-        re.sub(r"[^A-Za-z0-9_.-]+", "-", case.get("name", "case")).strip("-").lower() or "case"
+        re.sub(r"[^A-Za-z0-9_.-]+", "-", ("shareable-investigation" if case.get("investigation", {}).get("redaction", {}).get("enabled") else case.get("name", "case"))).strip("-").lower() or "case"
     )
     return Response(
         pdf,

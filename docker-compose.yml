@@ -1,7 +1,7 @@
 services:
   menace:
     build: .
-    image: osint-menace:0.2.0
+    image: osint-menace:0.3.0
     container_name: osint-menace-addons
     ports:
       - "0.0.0.0:8088:8080"

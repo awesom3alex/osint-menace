@@ -1,8 +1,8 @@
 # OSINT Menace
 
-**v0.2.0 — It Works on Phillip’s Computer Too**
+**v0.3.0 — Now With 37% More Menace — Statistics were fabricated.**
 
-![OSINT Menace v0.2.0 announcement](docs/images/osint-menace-beta-announcement.png)
+![OSINT Menace v0.3.0 release artwork: the Menace mascot asks Steve whether it works on his computer.](docs/images/osint-menace-v0.3.0-release.jpeg)
 
 **Open-Source Recon Console · Built for Hunters, Not Browsers.**
 A Defensive Thinking Project by Alex Berta.
@@ -21,6 +21,12 @@ OSINT Menace is a local investigation workspace with a Dockerized web interface 
 - **Evidence provenance:** screenshot attachments, source URLs, attachment times, optional capture times, SHA-256 hashes, and file-integrity checks.
 - **Dossiers and reports:** guided dossier editing, editable Word reports, PDF reports, and JSON/Markdown/HTML exports. Report capabilities differ by interface; see the guides below.
 - **Backup and restore:** complete case ZIPs with referenced evidence and a file manifest; verified import previews restore into a separate case without overwriting existing work.
+- **Case graphs:** editable relationship maps with photos, standard and custom typed fields, reusable graph-local field templates, per-graph legends, and PNG/JSON export. Add saved findings directly to a graph. See [Case graphs](docs/CASE_GRAPHS.md).
+- **Graph investigation tools:** search/filtering, autosave and browser recovery, drag-to-connect, context menus, groups and annotations, collapsible branches, duplicate review, evidence previews, and a mini-map.
+- **Graph views and reporting:** save layouts and filters, explore relationship dates, preserve named milestones, and include selected graph views with legends and supporting evidence in PDF and Word reports.
+- **Report builder:** executive summaries, selected and ordered content, colored legend labels, numbered evidence references, and preview before export. See [Report builder](docs/REPORT_BUILDER.md).
+- **Investigation workflow:** chronological evidence/relationship timelines, confidence and reasoning with supporting sources, tasks and due dates, and text redaction for shareable reports. See [Investigation workspace](docs/INVESTIGATION_WORKSPACE.md).
+- **Case navigation:** case-wide search, graph entity profiles, advisory review before sharing, and digital footprint/organization/incident starter templates. See [Case tools](docs/CASE_TOOLS.md).
 - **Terminal workspace:** interactive searches, batch input, direct public-source collectors, case management, reviews/tags, dossier editing, and standalone report exports.
 - **Fictional demo:** explore a read-only sample case at `/demo` without running network searches.
 
@@ -30,18 +36,23 @@ Image analysis and image searching are currently **disabled and deferred**.
 
 ### Docker web interface
 
-Requirements: Docker Desktop or Docker Engine with Compose v2, Git, and Python 3.12+ to fetch the pinned addon sources.
+Use a checkout whose `VERSION` is `0.3.0`; the commands below build locally and do not assume a published v0.3.0 image or Git tag.
+
+Requirements: Docker Desktop or Docker Engine running with Compose v2, and Bash on macOS, Linux, or WSL2. Download/extract the source archive or clone the repository. Host Python, Git, Go, and addon packages are not required by the setup script.
+
+From the extracted project folder:
 
 ```bash
-git clone https://github.com/awesom3alex/osint-menace.git
-cd osint-menace
-python3 addons/fetch.py
-docker compose up -d --build
+bash install.sh
 ```
+
+If you prefer Git, clone `https://github.com/awesom3alex/osint-menace.git` first and run the same command inside `osint-menace`.
 
 Open **[http://localhost:8088](http://localhost:8088)**.
 
-The first build downloads tool dependencies and can take several minutes. Each Python addon uses its own virtual environment; Go tools are compiled from pinned sources. The running image is `osint-menace:0.2.0`.
+The setup script fetches pinned addons, builds and starts Docker, and performs three focused checks. Rerun it to upgrade: it backs up existing data before replacing the container and attempts to restart the previous image if installation fails. Use `bash install.sh --no-open` to skip browser launch or `bash install.sh --help` for options. See [installer instructions and troubleshooting](INSTALL.md#using-installsh) for platform requirements, backup locations, and recovery. Docker itself is a one-time prerequisite.
+
+The first build downloads tool dependencies and can take several minutes. Each Python addon uses its own virtual environment; Go tools are compiled from pinned sources. The running image is `osint-menace:0.3.0`.
 
 ```bash
 # Check the running version
@@ -53,7 +64,7 @@ docker compose down
 
 Compose listens on all host interfaces at port 8088, allowing access from another computer on a trusted local network using the host’s LAN address. **There is no built-in authentication. Do not publish this port directly to the internet.**
 
-See [INSTALL.md](INSTALL.md) for setup, troubleshooting, updates, and local development.
+See [INSTALL.md](INSTALL.md) for clean setup, backed-up upgrades and rollback, the three focused installation checks, troubleshooting, and development. Existing installations should preserve the full `data/` directory and their environment configuration before replacement.
 
 ### Terminal interface
 
@@ -148,15 +159,15 @@ Detailed limits and persistence behavior: [WORKSPACE_FEATURES.md](WORKSPACE_FEAT
 
 ## Development and contributions
 
-```bash
-pip install -r requirements-dev.txt
-ruff check .
+Install development tooling with `pip install -r requirements-dev.txt`. For normal installation or upgrades, use the three focused checks in [INSTALL.md](INSTALL.md#version-and-release-checks). When changing code, select the relevant test module and review the affected workflow; do not run the complete suite or every addon automatically.
 
-docker compose exec -T menace python -m unittest discover -s tests -v
-docker compose exec -T menace python addons/check.py
+For example, case navigation changes can be checked with:
+
+```bash
+python -m unittest tests.test_case_tools -q
 ```
 
-Addon startup checks run local `--help` commands rather than querying public targets. Automated tests use temporary data and fixtures; the image-feature tests remain skipped while those features are disabled.
+Tests use temporary case data and fixtures. External provider coverage and credentials require their own explicitly selected validation; a passing local test does not establish live-source accuracy.
 
 Report bugs or suggest improvements through [GitHub Issues](https://github.com/awesom3alex/osint-menace/issues). Include the version, reproduction steps, and redacted error output. Contributions should preserve source attribution, readable results, bounded execution, cancellation, and case/report compatibility.
 

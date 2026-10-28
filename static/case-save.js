@@ -65,7 +65,7 @@
 
   document.addEventListener('submit', async event => {
     const form = event.target;
-    if (!form.matches(formSelector)) return;
+    if (form.hasAttribute('data-native-submit') || !form.matches(formSelector)) return;
     event.preventDefault();
     if (pending.has(form)) return;
     pending.add(form);

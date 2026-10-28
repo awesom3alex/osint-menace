@@ -162,6 +162,8 @@ def evidence(case_id, evidence_id):
     if evidence_id not in ids:
         abort(404)
     path = EVIDENCE_DIR / case_id / (evidence_id + ".png")
+    if case_id == app.DEMO_ID:
+        path = Path(__file__).parent / "static" / "demo" / (evidence_id + ".png")
     if not path.is_file():
         abort(404)
     return send_file(path.resolve(), mimetype="image/png")

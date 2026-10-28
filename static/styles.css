@@ -1190,3 +1190,21 @@ input[type="datetime-local"]:focus { outline:none; border-color:var(--cyan); box
 .backup-form button { justify-self:start; }
 
 .release-version { margin-left:auto; color:var(--muted); font-size:.72rem; white-space:nowrap; padding:8px 0 8px 10px; }
+
+/* Grouped navigation: four destinations at a time, with secondary links on demand. */
+.primary-nav {gap:8px;align-items:start;width:auto;flex-wrap:wrap}
+.nav-category,.action-menu {position:relative;min-width:0}
+.nav-category > summary,.action-menu > summary {list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;min-height:40px;padding:8px 14px;border:1px solid var(--line);border-radius:7px;color:var(--text);background:#101923;font-size:.85rem;font-weight:650;text-transform:none;box-sizing:border-box}
+.nav-category > summary::-webkit-details-marker,.action-menu > summary::-webkit-details-marker {display:none}
+.nav-category > summary::after,.action-menu > summary::after {content:'▾';font-size:.7rem;color:var(--muted)}
+.nav-category[open] > summary,.nav-category.is-current > summary,.action-menu[open] > summary {border-color:var(--cyan);background:#12252e}
+.nav-dropdown,.action-dropdown {position:absolute;top:calc(100% + 6px);left:0;z-index:1100;min-width:210px;max-width:min(340px,calc(100vw - 48px));padding:8px;background:#101923;border:1px solid #526879;border-radius:9px;box-shadow:0 12px 32px #0009;display:grid;gap:4px}
+.primary-nav .nav-dropdown a,.top-nav .action-dropdown a {display:block;border:0;border-radius:5px;background:transparent;text-transform:none;font-size:.88rem;font-weight:500;padding:11px 12px;color:var(--text);text-decoration:none;white-space:normal}
+.primary-nav .nav-dropdown a:hover,.primary-nav .nav-dropdown a[aria-current=page],.top-nav .action-dropdown a:hover {background:#203443;color:#fff}
+.nav-dropdown .release-version {display:block;font-size:.75rem;padding:12px;border-top:1px solid var(--line);color:var(--muted);margin-top:4px;white-space:normal}
+:where(.nav-category,.action-menu) > summary:focus-visible {outline:2px solid var(--cyan);outline-offset:3px}
+.case-actions {align-items:start;gap:8px}
+.case-actions > a {border-radius:7px;text-transform:none;font-size:.85rem;min-height:40px;display:flex;align-items:center;font-weight:600}
+@media(max-width:600px) {.primary-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}.nav-category > summary{justify-content:space-between}.nav-category:nth-child(even) .nav-dropdown{left:auto;right:0}.action-dropdown{min-width:190px}}
+@media print {.primary-nav,.action-menu{display:none!important}}
+.sr-only {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}

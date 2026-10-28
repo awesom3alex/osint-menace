@@ -1,0 +1,73 @@
+{% extends 'workspace_base.html' %}
+{% block title %}Case graphs{% endblock %}
+{% block subtitle %}{% endblock %}
+{% block intro %}<p class="graph-breadcrumb"><a href="{{ url_for('case_detail',case_id=case.id) }}">← {{ case.name }}</a></p>{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static',filename='graphs.css') }}">
+{% if not case.is_demo %}
+<section class="results graph-picker">
+  <label>Graph<select id="graph-choice"><option value="">Choose a graph</option>{% for graph in case.get('graphs',[]) %}<option value="{{ graph.id }}">{{ graph.name }}</option>{% endfor %}</select></label>
+  <details class="action-menu" data-nav-menu><summary>New graph</summary><form class="action-dropdown" method="post" action="{{ url_for('case_graphs.create',case_id=case.id) }}"><label>Graph name<input name="name" maxlength="200" required placeholder="People and accounts"></label><button>Create graph</button></form></details>
+</section>
+<div id="graph-workspace" hidden>
+<section class="results graph-controls">
+  <div class="graph-toolbar" aria-label="Graph actions">
+    <details class="action-menu graph-add" data-nav-menu><summary>Add to graph</summary><div class="action-dropdown">
+      <label>Object type<select id="object-type"></select></label><button id="add-object">Add object</button><button id="add-annotation">Add annotation</button>
+    </div></details>
+    <button id="fit" class="graph-quiet">Fit view</button><button id="undo" class="graph-quiet">Undo</button><button id="redo" class="graph-quiet">Redo</button>
+    <details class="action-menu" data-nav-menu><summary>More actions</summary><div class="action-dropdown graph-more">
+      <p class="menu-label">Organize</p><button id="connect">Connect selected pair</button><button id="group-selected">Group selected objects</button>
+      <p class="menu-label">View</p><button id="layout">Arrange automatically</button><button id="show-branches">Expand all branches</button>
+      <p class="menu-label">Export</p><button id="export-json">Export JSON</button><button id="export-png">Export image</button>
+      <button id="open-report-options">Case report options</button>
+    </div></details>
+    <details class="action-menu" data-nav-menu><summary>Graph settings</summary><div class="action-dropdown">
+      <label>Graph name<input id="graph-name" maxlength="200"></label><button id="save-graph">Save graph</button><button id="reload-graph">Reload saved graph</button>
+    </div></details>
+    <p id="graph-status" class="graph-save-state" role="status" aria-live="polite"></p>
+  </div>
+  <div class="graph-toolbar graph-searchbar" role="region" aria-label="Graph navigation">
+    <label class="graph-search-label"><span class="sr-only">Search graph</span><input id="graph-search" type="search" placeholder="Search this graph…"></label>
+    <details class="action-menu" data-nav-menu><summary>Filters <span id="active-filters" hidden></span></summary><div class="action-dropdown">
+      <label>Filter object type<select id="filter-type"><option value="">All types</option></select></label>
+      <label>Filter relationships<select id="filter-status"><option value="">All relationships</option><option value="hypothesis">Hypothesis</option><option value="supported">Supported</option></select></label>
+      <label>From date<input id="timeline-from" type="date"></label><label>To date<input id="timeline-to" type="date"></label>
+      <label class="graph-check"><input id="timeline-undated" type="checkbox" checked> Include undated relationships</label><button id="clear-filters">Clear filters</button>
+    </div></details><p id="filter-summary" role="status"></p>
+  </div>
+  <div id="search-results"></div>
+  <div class="graph-recovery"><p id="recovery-status" role="status" aria-live="polite"></p><button id="recover-draft" hidden>Recover draft</button><button id="discard-draft" hidden>Discard draft</button></div>
+</section>
+<div class="graph-columns"><section class="results graph-board"><div class="graph-stage"><div id="graph-canvas" aria-label="Investigation graph"></div>
+<svg id="connection-line" aria-hidden="true"><line stroke="#ffffff" stroke-width="2" stroke-dasharray="6 4" /></svg><button id="connection-handle" hidden aria-label="Drag to connect" title="Drag to another object, or click then choose a destination">+</button></div>
+<details class="graph-reference"><summary>Legend &amp; mini-map</summary><div class="graph-map"><canvas id="mini-map" width="240" height="150" role="img" aria-label="Graph mini-map; click to navigate"></canvas><div><div id="graph-legend"></div><p class="product-line">Solid: supported · Dashed: hypothesis</p></div></div></details>
+</section>
+<aside class="results graph-editor"><h2>Details</h2><label><span class="sr-only">Select object or connection</span><select id="element-choice"><option value="">Select an object or connection</option></select></label><div id="details"><p>Select an object or connection to edit it.</p></div>
+<details><summary>Legend and object types</summary><div id="legend-editor"></div><label>New type name<input id="new-type" maxlength="100"></label><button id="add-type">Add object type</button></details>
+<details><summary>Groups</summary><div id="group-editor"></div></details>
+<details id="view-panel"><summary>Saved views</summary><p class="product-line">Save filters, layout, and zoom for later.</p>
+  <label>Saved view<select id="saved-view"><option value="">Choose a view</option></select></label><button id="apply-view">Apply view</button>
+  <details class="graph-submenu"><summary>Manage selected view</summary><button id="update-view">Update selected view</button><button id="remove-view">Remove view</button></details>
+  <label>New view name<input id="view-name" maxlength="100" placeholder="People"></label><button id="save-view">Save new view</button>
+</details>
+<details id="snapshot-panel"><summary>Milestones</summary><p class="product-line">Named copies of the whole graph. Restoring also keeps a copy of your current graph.</p>
+  <label>Snapshot<select id="snapshot-choice"><option value="">Choose a snapshot</option></select></label><button id="restore-snapshot">Restore snapshot</button><button id="remove-snapshot">Remove snapshot</button>
+  <label>Snapshot name<input id="snapshot-name" maxlength="150" placeholder="Initial assessment"></label><button id="create-snapshot">Create snapshot</button>
+</details>
+<details id="report-panel"><summary>Case report options</summary>
+  <label class="graph-check"><input id="include-graph-report" type="checkbox"> Include this graph in case PDF and Word reports</label>
+  <label>Report view<select id="report-view"><option value="">Full graph</option></select></label>
+  <p class="product-line">Uses saved data, with a legend and linked evidence. Findings excluded from reports stay excluded.</p>
+  <button id="download-graph-pdf">Download case PDF</button><button id="download-graph-word">Download case Word</button>
+</details>
+<details id="evidence-disclosure"><summary>Evidence preview</summary><section id="evidence-preview" aria-label="Evidence preview" aria-live="polite"><p>Select linked evidence to preview it here.</p></section></details>
+<details class="graph-help"><summary>How to use graphs</summary><p>Drag objects to arrange them. Select one to edit it or use its + handle to connect it. Shift-click to select several objects. Edits autosave.</p><p>More actions contains grouping, layout, and exports. Use Graph settings to rename or reload a graph.</p></details>
+</aside></div></div>
+<div id="graph-context" role="menu" aria-label="Graph actions" hidden></div>
+<dialog id="graph-confirm" aria-labelledby="graph-confirm-title"><h2 id="graph-confirm-title">Confirm graph action</h2><p id="graph-confirm-message"></p><form method="dialog"><button value="cancel">Cancel</button><button value="confirm">Confirm</button></form></dialog>
+<script id="graph-data" type="application/json">{{ case.get('graphs',[])|tojson }}</script>
+<script id="graph-config" type="application/json">{{ {'caseId':case.id,'base':url_for('case_graphs.workspace',case_id=case.id),'caseUrl':url_for('case_detail',case_id=case.id),'findings':finding_choices}|tojson }}</script>
+{% else %}<p>The demo case is read-only.</p>{% endif %}
+{% endblock %}
+{% block scripts %}{% if not case.is_demo %}<script src="{{ url_for('static',filename='vendor/cytoscape-3.33.1.min.js') }}" defer></script><script src="{{ url_for('static',filename='graph-tools.js') }}" defer></script><script src="{{ url_for('static',filename='graphs.js') }}" defer></script>{% endif %}{% endblock %}
