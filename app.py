@@ -30,6 +30,7 @@ import case_workflow
 import investigation
 import osint_tool
 import report_builder
+import usage_analytics
 import workspace_store as store
 from addon_tools import bp as addons_blueprint
 from case_backups import bp as backups_blueprint
@@ -45,6 +46,7 @@ from workspace_features import bp as workspace_blueprint
 
 APP_VERSION = (Path(__file__).parent / "VERSION").read_text().strip()
 app = Flask(__name__)
+usage_analytics.register(app)
 app.config["APP_VERSION"] = APP_VERSION
 app.jinja_env.globals["app_version"] = APP_VERSION
 app.jinja_env.globals.update(
