@@ -4,6 +4,11 @@
 
 ![OSINT Menace v0.4.0 — More Sources. Fewer Alibis. Investigation War Room.](docs/images/osint-menace-v0.4.0-release.png)
 
+[![Release](https://img.shields.io/github/v/release/awesom3alex/osint-menace?style=for-the-badge&label=Release&color=76FF03&labelColor=333333)](https://github.com/awesom3alex/osint-menace/releases/latest)
+[![Focus: OSINT and Investigations](https://img.shields.io/badge/Focus-OSINT%20%26%20Investigations-76FF03?style=for-the-badge&labelColor=333333)](#osint-menace)
+[![Deploy: Docker](https://img.shields.io/badge/Deploy-Docker-76FF03?style=for-the-badge&labelColor=333333&logo=docker&logoColor=white)](docs/INSTALL.md)
+[![Docs: Quickstart Guide](https://img.shields.io/badge/Docs-Quickstart%20Guide-76FF03?style=for-the-badge&labelColor=333333)](docs/QUICKSTART.md)
+
 A local investigation workspace from Defensive Thinking. Search public sources, review findings, retain evidence, build case graphs, and export reports.
 
 Start with the [Quickstart and tool/API guide](docs/QUICKSTART.md) for installation, a first investigation, and credential requirements.
