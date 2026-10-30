@@ -3,6 +3,9 @@ __pycache__/
 *.pyc
 .pytest_cache/
 reference_scripts/
+docs/
+tests/
+config/
 data/cases/
 data/cli_state.json
 .env
@@ -23,3 +26,11 @@ data/image_analysis/
 data/pending_backups/
 
 exports/
+
+data/backups/
+
+# Installation-local tool credentials
+data/private/
+
+# Runtime scheduler lock
+data/source-monitor.lock

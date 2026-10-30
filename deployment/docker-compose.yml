@@ -1,0 +1,17 @@
+name: osint-menace
+services:
+  menace:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
+    image: osint-menace:0.4.0
+    container_name: osint-menace-addons
+    ports:
+      - "0.0.0.0:8088:8080"
+    environment:
+      - INSTAGRAM_SESSION_ID
+      - GOOGLE_ANALYTICS_ID
+      - MENACE_GEOCODER_URL
+    volumes:
+      - ../data:/app/data
+    restart: unless-stopped

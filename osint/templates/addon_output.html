@@ -1,0 +1,13 @@
+{% if job.tool in ['unfurl','waymore','subfinder','dnstwist','theharvester'] %}{% include 'github_output.html' %}{% else %}
+{% set view=job.output_view %}
+{% if view.structured %}{{ readable(view.value) }}{% else %}
+{% if view.facts %}<dl class="output-facts">{% for fact in view.facts %}<div><dt>{{ fact.label }}</dt><dd>{{ fact.value }}</dd></div>{% endfor %}</dl>{% endif %}
+{% if view.signals %}<h3>Reported signals</h3><div class="addon-table-wrap"><table class="phone-account-table"><thead><tr><th>Platform / target</th><th>Reported status</th></tr></thead><tbody>{% for row in view.signals %}<tr><td>{{ row.platform }}</td><td>{{ row.status }}</td></tr>{% endfor %}</tbody></table></div>{% endif %}
+{% if view.links %}<h3>Reported public links</h3><div class="addon-link-grid">{% for link in view.links %}<div class="addon-link-card"><strong>{{ link.label }}</strong><p><a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.url }}</a></p><span class="module-badge">{{ link.status }}</span></div>{% endfor %}</div>{% endif %}
+{% for message in view.messages %}<p class="addon-provider-message">{{ message }}</p>{% endfor %}
+{% if not view.facts and not view.signals and not view.links %}<p>No recognized result fields were returned. Review the raw output for any unsupported output format or provider messages.</p>{% endif %}
+{% endif %}
+<p class="case-capture-note">Reported matches and account availability are unverified signals; they do not establish identity or account ownership.</p>
+<details class="output-group"><summary>Raw tool output</summary><pre class="phone-raw-output">{{ job.raw_output|default(job.output,true) }}</pre></details>
+
+{% endif %}

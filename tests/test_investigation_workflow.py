@@ -114,7 +114,8 @@ class InvestigationWorkflowTests(unittest.TestCase):
                 thread.join(5)
 
     def test_batch_progress_and_cancellation(self):
-        with patch.object(addons.POOL, "submit"), patch.dict(addons.JOBS, {}, clear=True):
+        with patch.object(addons.POOL, "submit"), patch.dict(addons.JOBS, {}, clear=True), patch("addon_tools.executable") as binary:
+            binary.return_value.is_file.return_value = True
             response = self.client.post(
                 "/api/unified",
                 json=dict(target="+14155552671", kind="phone", tools=["clank", "phoneinfoga"]),

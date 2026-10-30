@@ -187,7 +187,7 @@ class CollectorTests(unittest.TestCase):
                 word = Document(build_word_report(case))
                 text = "\n".join(paragraph.text for paragraph in word.paragraphs)
                 self.assertIn("https://example.com", text)
-                self.assertIn("body_sha256", text)
+                self.assertIn("Body sha256: abc", text)
                 self.assertIn("Evidence text", text)
         finally:
             menace.core.CASES_DIR = old_dir

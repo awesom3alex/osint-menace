@@ -57,4 +57,4 @@ class DeferredImageTests(unittest.TestCase):
             "osint_links.html",
             "workspace_base.html",
         ]:
-            self.assertNotIn('href="/images"', (Path("templates") / template).read_text())
+            self.assertNotIn('href="/images"', (Path("osint/templates") / template).read_text())

@@ -33,8 +33,8 @@ reference_scripts/
 *.swo
 
 
-# Downloaded upstream sources; revisions are recorded in addons/manifest.json.
-addons/sources/
+# Downloaded upstream sources; revisions are recorded in osint/addons/manifest.json.
+osint/addons/sources/
 
 data/workspace.sqlite3*
 data/evidence/
@@ -46,3 +46,15 @@ data/image_analysis/
 data/pending_backups/
 # Local visual verification captures
 *-preview.jpg
+
+# Saved case recovery archives stay on the host.
+data/backups/
+
+# Installation-local tool credentials
+data/private/
+
+# Local verification captures
+docs/previews/
+
+# Runtime scheduler lock
+data/source-monitor.lock

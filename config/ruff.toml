@@ -1,0 +1,8 @@
+cache-dir = "tmp/cache/ruff"
+src = ["osint"]
+target-version = "py312"
+line-length = 100
+extend-exclude = ["osint/addons/sources", "reference_scripts", "data", "output", "tmp"]
+
+[lint]
+select = ["E9", "F401", "F811", "F821", "I"]

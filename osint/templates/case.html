@@ -1,0 +1,138 @@
+{% from 'readable_value.html' import readable %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ case.name }} | OSINT Menace</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dossier.css') }}">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="console">
+        <div class="brand-row">
+          <div>
+            <p class="eyebrow">Case Workspace</p>
+            <h1>{{ case.name }}</h1>
+            <p class="product-line">Created {{ case.created_at }} · Updated {{ case.updated_at }}</p>
+          </div>
+          <div class="header-actions">
+            {% include 'primary_nav.html' %}
+            <div class="top-nav case-actions"><a href="{{ url_for('case_tools.search',case_id=case.id) }}">Search case</a><details class="action-menu" data-nav-menu><summary>Case tools</summary><div class="action-dropdown"><a href="{{ url_for('email_evidence.workspace',case_id=case.id) }}">Email Evidence</a><a href="{{ url_for('github_tools.page',case_id=case.id) }}">Research</a><a href="{{ url_for('advanced.connections',case_id=case.id) }}">Cross-case connections</a><a href="{{ url_for('advanced.reader',case_id=case.id) }}">Evidence reader</a><a href="{{ url_for('advanced.questions',case_id=case.id) }}">Investigation questions</a><a href="{{ url_for('advanced.monitors',case_id=case.id) }}">Source monitoring</a><a href="{{ url_for('advanced.workflows',case_id=case.id) }}">Saved workflows</a><a href="{{ url_for('case_review.inbox',case_id=case.id) }}">Review inbox</a><a href="{{ url_for('case_review.resolve',case_id=case.id) }}">Resolve entities</a><a href="{{ url_for('case_review.select_timeline',case_id=case.id) }}">Export chronology</a><a href="{{ url_for('case_review.health',case_id=case.id) }}">Case health</a><a href="{{ url_for('case_research.dashboard',case_id=case.id) }}">Dashboard</a><a href="{{ url_for('case_research.expand',case_id=case.id) }}">Expand sources</a><a href="{{ url_for('case_research.backup_center',case_id=case.id) }}">Backups</a><a href="{{ url_for('case_tools.entities',case_id=case.id) }}">Entity profiles</a><a href="{{ url_for('investigation.workspace',case_id=case.id) }}">Timeline and tasks</a><a href="{{ url_for('case_tools.review',case_id=case.id) }}">Review before sharing</a></div></details>
+              {% if not case.is_demo %}<a href="{{ url_for('case_graphs.workspace',case_id=case.id) }}">Case graphs ({{ case.get('graphs', [])|length }})</a>{% endif %}
+              {% if not case.is_demo %}<a href="{{ url_for('edit_dossier',case_id=case.id) }}">Edit Dossier</a>{% endif %}
+              <details class="action-menu" data-nav-menu><summary>Export &amp; backup</summary><div class="action-dropdown">
+              {% if not case.is_demo %}<a href="{{ url_for('case_backups.download',case_id=case.id) }}">Download backup ZIP</a>{% endif %}
+              {% if case.is_demo %}<a href="{{ url_for('report_builder.preview',case_id=case.id) }}">Preview report</a>{% else %}<a href="{{ url_for('report_builder.editor',case_id=case.id) }}">Build report</a>{% endif %}<a href="{{ url_for('export_case_json', case_id=case.id) }}">JSON</a>
+              <a href="{{ url_for('export_case_markdown', case_id=case.id) }}">Markdown</a>
+              <a href="{{ url_for('export_case_html', case_id=case.id) }}">HTML Report</a><a href="{{ url_for('pdf_report.export_pdf',case_id=case.id) }}">Download PDF</a><a href="{{ url_for('export_case_word',case_id=case.id) }}">Download Word</a>
+              </div></details>
+            </div>
+          </div>
+        </div>
+        {% if not case.is_demo %}<details class="output-group"><summary>Case notes</summary><form class="case-notes-form" method="post" action="{{ url_for('case_features.notes',case_id=case.id) }}"><label>Scope and analyst notes<textarea name="notes" maxlength="50000">{{ case.notes }}</textarea></label><button type="submit">Save case notes</button></form></details>{% else %}<p>{{ case.notes }}</p>{% endif %}
+      </section>
+
+      <section class="summary-strip">
+        <div>
+          <strong>{{ case.summary.searches }}</strong>
+          <span>Searches</span>
+        </div>
+        <div>
+          <strong>{{ case.summary.findings }}</strong>
+          <span>Findings</span>
+        </div>
+        <div>
+          <strong>{{ case.summary.links }}</strong>
+          <span>Pivots</span>
+        </div>
+        <div>
+          <strong>{{ case.summary.notes }}</strong>
+          <span>Notes</span>
+        </div>
+      </section>
+
+      {% if case.dossier or case.is_demo %}{% include 'dossier_sections.html' %}{% endif %}
+      {% if not case.is_demo %}{% include 'case_activity.html' %}{% endif %}
+      {% for search in case.searches|reverse %}
+        <section class="results">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">{{ search.search_type }}</p>
+              <h2>{{ search.query }}</h2>
+            </div>
+            {% if not case.is_demo %}<form class="case-item-delete" method="post" action="{{ url_for('delete_case_item', case_id=case.id, item_id=search.id) }}">
+              <button class="subtle-danger-button" type="submit">Delete Item</button>
+            </form>{% endif %}
+          </div>
+          <p class="product-line">{{ search.created_at }}</p>
+          {% for section in search.results %}
+            {% set section_index = loop.index0 %}
+            <article class="case-result">
+              <div class="section-heading">
+                <h3>{{ section.name }}</h3>
+                {% if section.module %}
+                  <span class="module-badge">{{ section.module.name }}</span>
+                {% endif %}
+              </div>
+              {% if section.findings %}
+                <div class="result-grid">
+                  {% for finding in section.findings %}
+                    {% set reference=search.id ~ ':' ~ section_index ~ ':' ~ loop.index0 %}
+                    {% set merge_info=(merged_refs|default({})).get(reference) %}
+                    <article class="result-card" id="finding-{{ reference }}" data-finding-ref="{{ reference }}">
+                      {% if merge_info and not merge_info.primary %}<details class="merged-original"><summary>Merged duplicate · {{ finding.label }}</summary>{% endif %}
+                      {% if merge_info and merge_info.primary %}<p class="module-badge">Merged representative</p>{% endif %}
+                      <h3>{{ finding.label }}</h3>
+                      <p class="case-capture-note">Source: {{ finding.source or section.get("module", {}).get("name", "OSINT Menace") }}</p>
+                      {{ readable(finding.value) }}
+                      {% if not case.is_demo %}<form method="post" action="{{ url_for('case_graphs.add_finding',case_id=case.id,search_id=search.id,si=section_index,fi=loop.index0) }}">
+                        <label>Graph<select name="graph_id"><option value="">Create new graph</option>{% for graph in case.get('graphs', []) %}<option value="{{ graph.id }}">{{ graph.name }}</option>{% endfor %}</select></label>
+                        <button type="submit">Add to graph</button>
+                      </form>{% endif %}
+                      {% if not case.is_demo %}{% include "finding_review.html" %}{% endif %}
+                      {% if merge_info and not merge_info.primary %}</details>{% endif %}
+                    </article>
+                  {% endfor %}
+                </div>
+              {% endif %}
+              {% if section.links %}
+                <div class="links-list">
+                  {% for link in section.links %}
+                    <a href="{{ link.value }}" target="_blank" rel="noopener noreferrer">
+                      <span>{{ link.label }}</span>
+                      <small>{{ link.value }}</small>
+                    </a>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </article>
+          {% endfor %}
+        </section>
+      {% else %}
+        <section class="results"><div class="notes"><p>No searches saved to this case yet.</p></div></section>
+      {% endfor %}
+
+      {% if not case.is_demo %}<section class="results danger-zone">
+        <div class="section-heading">
+          <p class="eyebrow">Danger Zone</p>
+          <h2>Delete Case</h2>
+        </div>
+        <p class="product-line">This removes the saved case file and all searches stored in it.</p>
+        {% if delete_error %}
+          <div class="alert" role="alert">{{ delete_error }}</div>
+        {% endif %}
+        <form class="delete-form" method="post" action="{{ url_for('delete_case', case_id=case.id) }}">
+          <label>
+            Type case name to confirm
+            <input name="confirm_name" type="text" placeholder="{{ case.name }}" autocomplete="off">
+          </label>
+          <button class="danger-button" type="submit">Delete Case</button>
+        </form>
+      </section>{% endif %}
+    </main>
+    <script src="{{ url_for('static',filename='case-save.js') }}" defer></script>
+    <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="alexberta" data-color="#FFDD00" data-emoji="🍕" data-font="Cookie" data-text="Buy me a Pizza" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff"></script>
+  </body>
+</html>

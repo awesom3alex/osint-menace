@@ -1,0 +1,85 @@
+{
+  "aliens_eye": {
+    "repository": "https://github.com/arxhr007/Aliens_eye.git",
+    "revision": "4f407e8510d7bfb52191e035a2ccb3f2e4992bee"
+  },
+  "blackbird": {
+    "repository": "https://github.com/p1ngul1n0/blackbird.git",
+    "revision": "b45505080ef51bb3ef52dc29879ee6bef31e5b94"
+  },
+  "clank": {
+    "repository": "https://github.com/AnshumanAtrey/clank.git",
+    "revision": "8fa80bda9c8dae6f5fad6268dfd3eb9d0e1ea08f"
+  },
+  "dnstwist": {
+    "license": "Apache-2.0",
+    "repository": "https://github.com/elceef/dnstwist.git",
+    "revision": "341395377f40761fe4152f43fd18eea757b6069a"
+  },
+  "exiftool": {
+    "license": "Artistic-1.0 or GPL-1.0-or-later",
+    "repository": "https://github.com/exiftool/exiftool.git",
+    "revision": "980409314fddbd83d9092b5c160fafab7f67fd52"
+  },
+  "holehe": {
+    "repository": "https://github.com/megadose/holehe.git",
+    "revision": "14da70f588538936b20d238783c5e28a0772a2b3"
+  },
+  "ignorant": {
+    "repository": "https://github.com/megadose/ignorant.git",
+    "revision": "40b3eb734ef3d55e6d16eb314e49dbf520fa1f64"
+  },
+  "maigret": {
+    "repository": "https://github.com/soxoj/maigret.git",
+    "revision": "eaf820666d15bfd545129f3223e2261c27191e74"
+  },
+  "mail-parser": {
+    "license": "Apache-2.0",
+    "repository": "https://github.com/SpamScope/mail-parser.git",
+    "revision": "ca3d04ec3eb90abf806c1e25a9f71749678787e6"
+  },
+  "naminter": {
+    "repository": "https://github.com/3xp0rt/naminter.git",
+    "revision": "7cb094f8d9b6c4d94a464e91aacfa75167f06e45"
+  },
+  "phoneinfoga": {
+    "repository": "https://github.com/sundowndev/phoneinfoga.git",
+    "revision": "55807b05b753dab7bc6fe67403ca385668dda179"
+  },
+  "sherlock": {
+    "repository": "https://github.com/sherlock-project/sherlock.git",
+    "revision": "e40a45ec2a074b90703b3b4b842c8a3adbd6ada3"
+  },
+  "social-analyzer": {
+    "repository": "https://github.com/qeeqbox/social-analyzer.git",
+    "revision": "1ba0905e00d054aab833eb3693739c354db09e0f"
+  },
+  "socialscan": {
+    "repository": "https://github.com/iojw/socialscan.git",
+    "revision": "5ae42d0f82b0ebd717b3ae52b693b4ececa902b1"
+  },
+  "subfinder": {
+    "license": "MIT",
+    "repository": "https://github.com/projectdiscovery/subfinder.git",
+    "revision": "c97f25802892093060f0fc424bfc3f39e273693a"
+  },
+  "theharvester": {
+    "license": "GPL-2.0-only",
+    "repository": "https://github.com/laramies/theHarvester.git",
+    "revision": "ffe1f3a83251f3328f94b19b285cc6dd5fb1f8d9"
+  },
+  "toutatis": {
+    "repository": "https://github.com/megadose/toutatis.git",
+    "revision": "d99967155e59966a560877148273ca0ff9f28508"
+  },
+  "unfurl": {
+    "license": "Apache-2.0",
+    "repository": "https://github.com/RyanDFIR/unfurl.git",
+    "revision": "31600b855bdbe695e8c429cf3ad6c26575a3c66c"
+  },
+  "waymore": {
+    "license": "MIT",
+    "repository": "https://github.com/xnl-h4ck3r/waymore.git",
+    "revision": "4e02de512fd6b110be92dc8bffb3002edfebcb6c"
+  }
+}

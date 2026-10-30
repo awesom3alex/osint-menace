@@ -33,6 +33,9 @@ class ReleaseIntegrationTests(unittest.TestCase):
         self.client = app.app.test_client()
 
     def test_web_and_terminal_share_version(self):
+        self.assertEqual(version.__version__, "0.4.0")
+        compose = (Path(__file__).resolve().parents[1] / "deployment/docker-compose.yml").read_text()
+        self.assertIn(f"image: osint-menace:{version.__version__}\n", compose)
         self.assertEqual(version.__version__, app.APP_VERSION)
         self.assertEqual(self.client.get("/api/version").json["version"], version.__version__)
 

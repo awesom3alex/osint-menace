@@ -50,7 +50,8 @@ class WorkspaceTests(unittest.TestCase):
         self.evidence_url = f"/cases/{self.case['id']}/evidence/{search['id']}/0/0"
 
     def test_unified_persists_and_reopens_without_rerun(self):
-        with patch.object(addons.POOL, "submit") as submit:
+        with patch.object(addons.POOL, "submit") as submit, patch("addon_tools.executable") as binary:
+            binary.return_value.is_file.return_value = True
             response = self.client.post(
                 "/api/unified",
                 json=dict(target="+14155552671", kind="phone", tools=["clank", "phoneinfoga"]),
@@ -190,7 +191,10 @@ class WorkspaceTests(unittest.TestCase):
     def test_pages_and_local_check(self):
         for url in ("/unified", "/history", "/tools", f"/cases/{self.case['id']}"):
             self.assertEqual(self.client.get(url).status_code, 200, url)
-        response = self.client.post("/tools/clank/check")
+        with patch("workspace_features.subprocess.run") as process:
+            process.return_value.returncode = 0
+            response = self.client.post("/tools/clank/check")
+            self.assertEqual(process.call_args.args[0], addons.startup_command("clank"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(store.health()["clank"]["startup_check"], "passed")
         self.assertEqual(self.client.post("/tools/unknown/check").status_code, 404)

@@ -22,12 +22,15 @@ class AddonTests(unittest.TestCase):
 
     def test_inventory_and_ui(self):
         response = self.client.get("/api/addons")
-        self.assertEqual(len(response.json), 12)
-        self.assertTrue(all(t["installed"] for t in response.json))
+        self.assertEqual(len(response.json), 17)
+        self.assertEqual({t["id"]: t["installed"] for t in response.json},
+                         {key: addons.executable(key).is_file() for key in addons.TOOLS})
         page = self.client.get("/addons")
         self.assertEqual(page.status_code, 200)
         self.assertIn(b"WhatsMyName Search", page.data)
-        self.assertIn(b"Needs session", page.data)
+        with patch("addon_tools.executable") as binary, patch("tool_credentials.values", return_value={}):
+            binary.return_value.is_file.return_value = True
+            self.assertIn(b"Needs session", self.client.get("/addons").data)
         self.assertIn(b"/addons", self.client.get("/").data)
 
     def test_input_validation(self):
@@ -58,6 +61,11 @@ class AddonTests(unittest.TestCase):
         self.assertEqual(cmd[1:3], ["1", "4155552671"])
 
     def test_capacity(self):
+        with patch("addon_tools.executable") as binary:
+            binary.return_value.is_file.return_value = True
+            self.check_capacity()
+
+    def check_capacity(self):
         with patch.dict(
             addons.JOBS,
             {str(i): {"status": "running", "created": time.time()} for i in range(2)},
@@ -70,6 +78,7 @@ class AddonTests(unittest.TestCase):
                 429,
             )
 
+    @unittest.skipUnless(addons.executable("clank").is_file(), "Requires installed Clank")
     def test_local_clank_run_and_case_capture(self):
         # Reserved fictional number; Clank's --local mode stays offline.
         response = self.client.post(
